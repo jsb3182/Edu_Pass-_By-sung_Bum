@@ -1,5 +1,16 @@
+# ECS 환경변수/Secrets Manager에서 RDS 연결값을 주입합니다.
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
 app:
   mode: aws
+  allow-insecure-http: false
 server:
   address: 0.0.0.0
-
+  port: ${SERVER_PORT:8080}
+  servlet:
+    session:
+      cookie:
+        secure: true

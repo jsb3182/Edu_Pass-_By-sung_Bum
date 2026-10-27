@@ -1,0 +1,6 @@
+# PC PostgreSQL 기본값. Docker에서는 DB_URL을 db 호스트로 덮어씁니다.
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://127.0.0.1:5432/boundary}
+    username: ${DB_USER:boundary}
+    password: ${DB_PASSWORD}

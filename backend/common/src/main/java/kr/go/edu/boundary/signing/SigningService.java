@@ -53,7 +53,8 @@ public class SigningService {
     public SigningService(JdbcTemplate jdbc, TaskService tasks, CurrentActor actor,
             AuditWriter audit, OutboxWriter outbox, ObjectMapper mapper,
             @Value("${app.public-base-url}") String publicBaseUrl,
-            @Value("${app.mode}") String mode) {
+            @Value("${app.mode}") String mode,
+            @Value("${app.allow-insecure-http:false}") boolean allowInsecureHttp) {
         this.jdbc = jdbc;
         this.tasks = tasks;
         this.actor = actor;
@@ -63,8 +64,13 @@ public class SigningService {
         URI address = URI.create(publicBaseUrl);
         boolean loopback = "local".equals(mode) && ("localhost".equals(address.getHost())
                 || "127.0.0.1".equals(address.getHost()));
-        if (address.getHost() == null || (!"https".equals(address.getScheme()) && !loopback)) {
-            throw new IllegalArgumentException("태블릿 접속 주소 APP_PUBLIC_BASE_URL에는 HTTPS가 필요합니다.");
+        boolean localHttp = "local".equals(mode) && "http".equals(address.getScheme())
+                && (loopback || allowInsecureHttp);
+        if (address.getHost() == null || address.getRawUserInfo() != null
+                || address.getRawQuery() != null || address.getRawFragment() != null
+                || (address.getPath() != null && !address.getPath().matches("/*"))
+                || (!"https".equals(address.getScheme()) && !localHttp)) {
+            throw new IllegalArgumentException("APP_PUBLIC_BASE_URL은 HTTPS 서버 기본 주소여야 합니다. 로컬 HTTP 실습은 APP_ALLOW_INSECURE_HTTP=true가 필요합니다.");
         }
         this.publicBaseUrl = publicBaseUrl.replaceAll("/+$", "");
     }

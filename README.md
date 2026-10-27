@@ -1,66 +1,89 @@
 # 방문·서명 기록 시스템
 
-전자정부 표준프레임워크 Boot 부모 POM을 사용하는 Spring Boot 3.5 / Java 17 프로젝트입니다. 같은 백엔드 JAR을 `local`과 `aws` 프로필로 배포하며, 관리자 화면과 방문자 태블릿 서명 화면을 JAR 안에 포함합니다. 프론트엔드 기술을 최종 확정하기 전에도 화면을 교체할 수 있도록 업무 기능은 JSON API에 둡니다.
+Java 17 / Spring Boot / PostgreSQL 기반입니다. 프론트엔드 소스는 역할별로 분리하고,
+백엔드는 공통 Java 코드에 local 또는 aws 실행 설정을 적용합니다.
 
-화면만 먼저 검토하려면 `preview/admin.html`을 로컬 파일로 열어 보세요. 방문자 서명 미리보기도 연결되어 있습니다. 실제 데이터나 네트워크 연결 없이 동작하는 가상 화면입니다. 파일별 수정 위치는 [화면 수정 안내](docs/FRONTEND_GUIDE.md)에 정리했습니다.
-데이터가 저장되는 순서는 [코드 흐름 한눈에 보기](docs/CODE_MAP.md)에 정리했습니다.
-화면은 로컬에 포함한 Bootstrap 4.5 CSS와 파란색·흰색 테마를 사용하며 외부 CDN을 호출하지 않습니다.
-공공서비스 화면 구성과 접근성은 [KRDS 지향 로컬 테마 적용 범위](docs/KRDS_ADAPTATION.md)에 기록했습니다.
+## 폴더 구조
 
-## 구현 범위
+~~~text
+frontend/
+  user/       방문자 태블릿 화면: index.html, js/sign.js, assets/, tests/
+  master/     관리자 웹 화면: index.html, login.html, js/, assets/
+  shared/     두 화면에서 함께 사용하는 CSS와 Bootstrap
+backend/
+  common/     pom.xml, src/main/java, src/main/resources, src/test/java
+  local/      run.ps1, compose.yml, config/application-local.yml, db/local-db.yml
+  aws/        run.ps1, config/application-aws.yml, config/env.example, task-definition.example.json
+  Dockerfile  두 환경에서 사용하는 공통 컨테이너 이미지
+preview/      서버 연결 없이 확인하는 가상 화면
+pom.xml       루트에서 전체 백엔드를 빌드하는 Maven 집계 파일
+~~~
 
-- 관리자: 신청 내역 조회·등록·상태 변경, Excel `.xlsx` 적재, 방문자 서명 링크·QR 발급, 서명과 위치 내역 조회, 계정·감사 기록 조회
-- 방문자: 10분짜리 일회용 링크로 내역 확인, 펜·손가락 서명, 별도 동의 후 위치 확인 선택, 저장
-- 데이터: 로컬과 AWS에서 각각 PostgreSQL 사용. 엑셀 적재와 서명은 트랜잭션으로 저장하고 동일 트랜잭션에 감사·아웃박스 이벤트를 기록
-- 보안: 관리자 세션 인증, BCrypt 비밀번호, 서버 측 역할 검사, CSRF, 기본 보안 헤더, 서명 링크 해시 저장, 서명 이미지·신청 내역 해시
-- 서명 당시 신청 내역의 스냅샷과 동의 문구를 서명과 함께 저장하며, 링크 발급 뒤 신청 내역이 바뀌면 새 링크를 요구합니다.
+local과 aws에 업무 코드를 복제하지 않습니다. 두 실행 스크립트가 common의
+BoundaryRecordsApplication을 각각 다른 프로필로 실행합니다. DB와 실행 환경은 서로 독립적이며
+자동 동기화나 자동 서버 검색은 구현하지 않았습니다.
 
-## 운영 모드
+## 빌드와 테스트
 
-| 모드 | 프로필 | DB | 실행 위치 |
-| --- | --- | --- | --- |
-| 노트북 | `local` | 노트북의 PostgreSQL | 승인된 폐쇄망 서버 |
-| AWS | `aws` | 승인된 범위의 RDS PostgreSQL | AWS 서울 리전의 승인된 실행 환경 |
+프로젝트 루트에서 실행합니다. JDK 17, Maven 3.9+, JavaScript 테스트용 Node.js가 필요합니다.
 
-두 모드는 **서로 다른 DB**입니다. 관리자 화면에서 현재 노드가 항상 표시되며 오류 시 다른 모드로 자동 전환하지 않습니다. `outbox_events`에는 추후 승인된 동기화 경로에 보낼 이벤트가 쌓입니다. 현재 버전은 네트워크 동기화나 파일 반출입을 수행하지 않습니다. 기관의 허용 경로, 데이터 등급, 충돌 정책이 확정되기 전에는 전송 코드를 활성화하지 않습니다.
+~~~powershell
+mvn clean package
+node --test frontend/user/tests/sign-location.test.js
+~~~
 
-## 소스 빌드
+Maven이 PATH에 없다면 설치된 Maven의 mvn.cmd 전체 경로로 실행하세요.
+이번 작업 환경에는 검증용 Maven이 .tools/apache-maven-3.9.9/bin/mvn.cmd에 있습니다.
+.tools는 Git에 포함되지 않습니다.
 
-```text
-JDK 17
-Maven 3.9+
-PostgreSQL 16+
-mvn test
-mvn package
-```
+결과는 backend/common/target/boundary-records-0.1.0.jar입니다.
+Maven이 frontend의 실제 화면과 두 프로필 설정을 JAR에 포함합니다.
+화면을 수정한 후에도 다시 빌드해야 합니다. target 내부 파일은 수정하지 않습니다.
 
-eGovFrame Maven 저장소는 `pom.xml`에 선언되어 있습니다. 폐쇄망 빌드에서는 승인된 내부 Maven 미러 또는 사전 검증한 의존성 저장소가 필요합니다.
+## 실행
 
-## 실행 설정
+- [로컬 PC·태블릿 연결](backend/local/README.md)
+- [AWS 실행 설정](backend/aws/README.md)
+- [파일별 화면 수정 안내](docs/FRONTEND_GUIDE.md)
+- [기존 업무 코드 흐름](docs/CODE_MAP.md)
+- [이번 구조 변경 기록](docs/REFACTORING.md)
 
-필수 환경변수: `DB_URL`, `DB_USER`, `DB_PASSWORD`, `APP_NODE_ID`, `APP_PUBLIC_BASE_URL`. 최초 관리자 생성 시에는 `BOOTSTRAP_ADMIN_USER`와 16자 이상 `BOOTSTRAP_ADMIN_PASSWORD`가 필요합니다. DB에 사용자가 있으면 재시작 시 부트스트랩 계정을 다시 만들지 않습니다. 비밀값을 Git에 넣지 마세요.
+서버 시작 후 관리자 주소는 /master/index.html, 로그인은 /master/login.html입니다.
+방문자 주소는 /user/index.html#token=발급된토큰입니다.
+기존 /admin.html, /login.html, /sign.html 링크는 새 화면으로 이동합니다.
 
-노트북 배포 예시는 [compose.yml](deploy/local/compose.yml), AWS 컨테이너 정의 예시는 [task-definition.example.json](deploy/aws/task-definition.example.json)에 있습니다. 이 파일들은 배포 템플릿이며 실행·업로드되지 않았습니다. 노트북 구성은 기본적으로 HTTP 포트를 `127.0.0.1`에만 바인딩합니다. 태블릿 접속에는 기관이 승인한 HTTPS 호스트와 신뢰된 내부 인증서가 필요합니다. 운영 환경에서 `SESSION_COOKIE_SECURE=false`를 사용하지 마세요.
+프론트엔드 소스는 분리했지만 배포 시에는 백엔드와 같은 주소로 제공합니다.
+현재 fetch('/api/...')와 세션·CSRF 인증을 유지하기 위한 구성입니다.
+실제 화면은 파일을 더블클릭해서 실행하지 않고 서버를 통해 엽니다.
+파일로 볼 때는 preview/admin.html을 사용하세요.
 
-AWS 템플릿은 기존에 승인된 VPC·서브넷·로드밸런서·RDS·Secrets Manager·로그 그룹을 입력받는 형태입니다. AWS의 CSAP 대상 서비스 및 기관 데이터 등급 확인이 선행돼야 합니다. 실제 AWS 인프라 생성 코드는 이 저장소에 포함하지 않았습니다.
-RDS JDBC 주소에는 기관이 승인한 TLS 서버 인증 검증 설정과 인증서 경로를 포함해야 합니다.
+## 현재 구현된 기능과 다음 단계
 
-## 엑셀 입력 계약
+- 관리자: 신청 내역 조회·등록·상태 변경, Excel 적재, 방문자 서명 링크·QR 발급,
+  서명·위치 내역 확인, 계정·감사 기록 조회
+- 방문자: 관리자가 발급한 일회용 링크로 내역 확인, Canvas 서명, 선택적 위치 동의, 제출
+- DB: Flyway 마이그레이션, 트랜잭션, 감사 기록, 전송 대기 이벤트 저장
+- 접근 제어: 관리자 세션, 역할 검사, CSRF, 비활성 계정 차단
 
-첫 시트 헤더: `신청번호`, `신청자`, `학교명`, `진행상태` (README의 영문 별칭도 지원). 10MB·5,000행 이내의 `.xlsx`만 허용합니다. 수식, 필수값 누락, 동일 파일 내 정제 신청번호 중복은 전체 적재를 거부합니다. 신청번호는 NFKC 정규화와 대소문자 통일 후 문자·숫자만 남겨 비교하며 원본 값도 보존합니다. 이런 정제로 서로 다른 번호가 동일해질 수 있으므로 실제 기관 번호 체계로 마이그레이션 전에 대조해야 합니다.
+방문 목적·이름·소속은 현재 관리자가 링크 발급 때 입력합니다. 방문자가 직접 목적과 정보를 입력하는
+접수 흐름, 전용 승인/반려 기능, 실시간 푸시 현황판은 이번 구조 변경에서 새로 구현하지 않았습니다.
+APK 프로젝트와 서버 주소 선택·검색 기능도 다음 단계입니다.
+APK를 붙일 때는 DB에 직접 접속하지 않고 선택한 서버의 API를 사용합니다.
 
-## 서명 증적의 한계
+로컬 DB와 AWS RDS는 모두 PostgreSQL을 사용합니다. 기존 SQL이 PostgreSQL 전용 기능을
+사용하므로 SQLite로 바꾸려면 별도 데이터 계층 수정이 필요합니다.
 
-서명 PNG와 위치 좌표는 단독으로 방문자의 법적 신원이나 물리적 현장 존재를 증명하지 않습니다. 담당자가 방문자와 대상 내역을 확인한 뒤 링크를 발급하는 업무 절차가 필요합니다. 위치 기록은 별도 동의를 받고, 미요청·권한 거부·측위 실패·부정확성을 구분합니다. 좌표를 외부 지도 서비스에 전송하지 않으며 관리자 화면에 수치와 정확도만 표시합니다. 보존 기간, 위치 수집 고지, 기관 전자서명 요건은 운영 전 확정해야 합니다.
+## 기본 설정
 
-## 운영 전 보안 항목
+DB_PASSWORD, APP_NODE_ID, APP_PUBLIC_BASE_URL 등은 환경변수로 주입합니다.
+로컬 기본 DB 주소는 jdbc:postgresql://127.0.0.1:5432/boundary입니다.
+AWS는 DB_URL, DB_USER도 반드시 지정합니다.
+최초 관리자 생성에는 BOOTSTRAP_ADMIN_USER와 16자 이상 BOOTSTRAP_ADMIN_PASSWORD가 필요합니다.
+실제 비밀번호와 .env 파일은 Git에 포함하지 않습니다.
 
-기관 승인 절차에 맞춰 로그인 요청의 속도 제한, 계정 연계·다중 인증, HTTPS 인증서 배포, 암호화된 백업과 복원, 정확한 서버 시각, 로그 보존 기간, 취약점 점검을 완료해야 합니다. 이 저장소의 AWS 파일은 예시 정의이며 운영 보안 승인을 대신하지 않습니다.
+## 엑셀과 서명
 
-## 참조 코드
-
-- [eGovFrame 공식 분리형 백엔드](https://github.com/eGovFramework/egovframe-template-simple-backend): Boot 부모 POM과 API 분리 구조 참조
-- [eGovFrame 공통컴포넌트](https://github.com/eGovFramework/egovframe-common-components): 권한·감사 설계 참고
-- [AWS 트랜잭션 아웃박스 예제](https://github.com/aws-samples/transactional-outbox-pattern): 저장과 전송 대기 기록의 원자성 참고
-
-외부 저장소의 업무 코드를 복사하지 않고 이 프로젝트의 도메인에 맞게 작성했습니다.
+엑셀 첫 시트 헤더는 신청번호, 신청자, 학교명, 진행상태입니다. 10MB·5,000행 이내의 .xlsx를
+지원하며, 오류가 있으면 전체 적재를 취소합니다. 신청번호는 정규화하여 중복을 검사합니다.
+서명 링크는 10분짜리 일회용이며 DB에는 토큰 원문 대신 해시를 저장합니다.
+서명 당시 내역 스냅샷·동의 문구·감사 기록을 함께 저장합니다.
