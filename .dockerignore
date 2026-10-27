@@ -1,0 +1,5 @@
+**
+!backend/
+!backend/common/
+!backend/common/target/
+!backend/common/target/boundary-records-0.1.0.jar

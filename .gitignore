@@ -1,4 +1,4 @@
-/target/
+target/
 /.idea/
 /.vscode/
 *.iml
@@ -17,3 +17,6 @@ data/
 *.zip
 *.jar
 
+
+.tools/
+node_modules/

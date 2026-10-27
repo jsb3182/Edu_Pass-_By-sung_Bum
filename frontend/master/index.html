@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>방문·서명 기록 관리자</title>
+  <link rel="stylesheet" href="/shared/assets/vendor/bootstrap.min.css">
+  <link rel="stylesheet" href="/shared/assets/css/krds-theme.css">
+  <link rel="stylesheet" href="/shared/assets/css/app.css">
+  <script src="/master/js/admin.js" defer></script>
+</head>
+<body class="admin-body">
+  <a class="krds-skip-link" href="#mainContent">본문으로 바로가기</a>
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">✓</span>
+      <div>
+        <strong>방문 기록</strong>
+        <small>EDUCATION OFFICE</small>
+      </div>
+    </div>
+    <nav aria-label="관리 메뉴">
+      <button class="nav-item active" data-view="overview">대시보드</button>
+      <button class="nav-item" data-view="tasks">신청 내역·서명</button>
+      <button class="nav-item" data-view="imports">엑셀 적재</button>
+      <button class="nav-item" data-view="users" id="usersNav">계정 관리</button>
+      <button class="nav-item" data-view="audit">감사 기록</button>
+      <button class="nav-item" data-view="password">내 비밀번호</button>
+    </nav>
+    <div class="sidebar-foot">
+      <span class="online-dot"></span>
+      <span id="nodeLabel">연결 확인 중</span>
+    </div>
+  </aside>
+
+  <main class="admin-main" id="mainContent">
+    <div class="krds-identity" role="note">
+      <span class="krds-identity-mark" aria-hidden="true">i</span>
+      방문·심사 기록을 관리하는 공공업무 화면입니다.
+    </div>
+    <nav class="krds-breadcrumb" aria-label="현재 위치">
+      <span>방문 기록</span><span class="separator" aria-hidden="true">›</span>
+      <strong id="breadcrumbCurrent" aria-current="page">대시보드</strong>
+    </nav>
+    <header class="topbar">
+      <div>
+        <span class="eyebrow">OPERATIONS CONSOLE</span>
+        <h1 id="viewTitle">대시보드</h1>
+      </div>
+      <div class="top-actions">
+        <span id="userLabel"></span>
+        <form action="/logout" method="post" id="logoutForm">
+          <input type="hidden" name="_csrf" id="logoutCsrf">
+          <button class="btn btn-light ghost-btn" type="submit">로그아웃</button>
+        </form>
+      </div>
+    </header>
+    <div id="message" class="alert message" role="status" hidden></div>
+
+    <section id="overviewView" class="view">
+      <div class="overview-hero">
+        <div>
+          <span class="hero-kicker">VISIT MANAGEMENT</span>
+          <h2>방문 기록을 쉽고 안전하게</h2>
+          <p>신청 내역부터 현장 서명까지 한 화면에서 확인하세요.</p>
+        </div>
+        <div class="hero-ticket" aria-hidden="true">
+          <span>오늘의 기록</span>
+          <strong>방문 확인</strong>
+          <span class="ticket-check">✓</span>
+        </div>
+      </div>
+      <div class="row metric-grid">
+        <div class="col-6 col-xl-3 metric-col"><article class="card metric">
+          <span>전체 신청</span>
+          <strong id="taskCount">—</strong>
+          <small>데이터베이스 저장 건수</small>
+        </article></div>
+        <div class="col-6 col-xl-3 metric-col"><article class="card metric">
+          <span>완료된 서명</span>
+          <strong id="signatureCount">—</strong>
+          <small>변경 불가 기록</small>
+        </article></div>
+        <div class="col-6 col-xl-3 metric-col"><article class="card metric">
+          <span>전송 대기 기록</span>
+          <strong id="pendingCount">—</strong>
+          <small>전송 기능은 아직 비활성</small>
+        </article></div>
+        <div class="col-6 col-xl-3 metric-col"><article class="card metric">
+          <span>엑셀 적재</span>
+          <strong id="importCount">—</strong>
+          <small>완료된 일괄 작업</small>
+        </article></div>
+      </div>
+      <div class="card notice-card">
+        <h2>운영 모드</h2>
+        <p id="modeExplanation">서버 상태를 확인하고 있습니다.</p>
+        <p class="muted">연결 실패 시 다른 서버로 자동 전환하지 않습니다. 상단의 운영 노드를 확인하세요.</p>
+      </div>
+    </section>
+
+    <section id="tasksView" class="view" hidden>
+      <div class="split-heading">
+        <p class="section-lead">신청번호로 내역을 찾고 방문자 서명을 발급합니다.</p>
+        <button class="btn btn-primary primary-btn" id="newTaskButton">+ 신청 직접 등록</button>
+      </div>
+
+      <div id="newTaskPanel" class="card panel" hidden>
+        <h2>신청 직접 등록</h2>
+        <p class="krds-field-hint"><span class="krds-required">*</span> 표시는 필수 입력 항목입니다.</p>
+        <form id="newTaskForm" class="form-grid">
+          <label><span>신청번호 <span class="krds-required" aria-hidden="true">*</span></span><input name="applicationNo" required maxlength="120" class="form-control"></label>
+          <label><span>신청자 <span class="krds-required" aria-hidden="true">*</span></span><input name="applicantName" required maxlength="200" class="form-control"></label>
+          <label><span>학교명 <span class="krds-required" aria-hidden="true">*</span></span><input name="schoolName" required maxlength="200" class="form-control"></label>
+          <label><span>진행상태 <span class="krds-required" aria-hidden="true">*</span></span><input name="status" required maxlength="100" value="접수" class="form-control"></label>
+          <button class="btn btn-primary primary-btn" type="submit">등록</button>
+        </form>
+      </div>
+
+      <div class="card panel">
+        <div class="toolbar">
+          <input id="taskSearch" type="search" placeholder="신청번호·신청자·학교명 검색" aria-label="신청 검색" class="form-control">
+          <button id="searchButton" class="btn btn-outline-primary secondary-btn">검색</button>
+        </div>
+        <div class="table-wrap">
+          <table class="table table-hover">
+            <caption class="sr-only">신청 내역 목록</caption>
+            <thead>
+              <tr>
+                <th>신청번호</th><th>신청자</th><th>학교명</th><th>상태</th><th>갱신</th>
+              </tr>
+            </thead>
+            <tbody id="taskRows"></tbody>
+          </table>
+        </div>
+        <div class="pager">
+          <button id="previousPage" class="btn btn-light ghost-btn">이전</button>
+          <span id="pageLabel"></span>
+          <button id="nextPage" class="btn btn-light ghost-btn">다음</button>
+        </div>
+      </div>
+
+      <div id="taskDetail" class="card panel detail-panel" hidden>
+        <div class="split-heading">
+          <div>
+            <span class="eyebrow">SELECTED RECORD</span>
+            <h2 id="detailTitle"></h2>
+            <p id="detailSubtitle" class="muted"></p>
+          </div>
+          <span id="detailSource" class="badge pill"></span>
+        </div>
+        <form id="statusForm" class="inline-form">
+          <label>진행상태<input name="status" required maxlength="100" class="form-control"></label>
+          <button class="btn btn-outline-primary secondary-btn">상태 저장</button>
+        </form>
+
+        <div class="divider"></div>
+        <h3>방문자 서명 세션 발급</h3>
+        <p class="muted">방문자 본인이 내용을 확인한 뒤 태블릿에서 서명합니다. 링크는 10분 동안 한 번만 사용할 수 있습니다.</p>
+        <form id="issueForm" class="form-grid">
+          <label>서명자 성명<input name="signerName" required maxlength="200" class="form-control"></label>
+          <label>소속<input name="affiliation" required maxlength="200" class="form-control"></label>
+          <label>방문 목적
+            <select class="custom-select" name="purpose">
+              <option value="EDUCATION">교육</option>
+              <option value="REVIEW">심사</option>
+              <option value="OTHER">기타</option>
+            </select>
+          </label>
+          <button class="btn btn-primary primary-btn" type="submit">서명 링크 발급</button>
+        </form>
+        <div id="issuedSession" class="issued-session" hidden>
+          <img id="sessionQr" alt="태블릿에서 스캔할 서명 QR 코드">
+          <div>
+            <strong>태블릿 서명 링크</strong>
+            <p id="sessionExpiry"></p>
+            <input id="sessionUrl" readonly aria-label="서명 링크" class="form-control">
+            <button id="copyLink" class="btn btn-outline-primary secondary-btn">링크 복사</button>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <h3>서명 내역</h3>
+        <div id="signatureRows" class="signature-list"></div>
+      </div>
+    </section>
+
+    <section id="importsView" class="view" hidden>
+      <p class="section-lead">관리 엑셀을 검증한 뒤 한 트랜잭션으로 반영합니다.</p>
+      <div class="card panel narrow">
+        <h2>엑셀 DB 적재</h2>
+        <p>첫 번째 시트에 <code>신청번호</code>, <code>신청자</code>, <code>학교명</code>, <code>진행상태</code> 헤더가 필요합니다. 10MB·5,000행 이하의 .xlsx 파일만 받습니다.</p>
+        <form id="importForm">
+          <label class="file-drop">엑셀 파일 선택
+            <input name="file" type="file" accept=".xlsx" required class="form-control-file">
+          </label>
+          <button class="btn btn-primary primary-btn" type="submit">검증 후 적재</button>
+        </form>
+        <div id="importResult" class="result-box" hidden></div>
+      </div>
+    </section>
+
+    <section id="usersView" class="view" hidden>
+      <p class="section-lead">운영자와 관리자의 접근 권한을 관리합니다.</p>
+      <div class="card panel">
+        <h2>계정 추가</h2>
+        <form id="userForm" class="form-grid">
+          <label>계정명<input name="username" required minlength="3" class="form-control"></label>
+          <label>초기 비밀번호<input name="password" type="password" required minlength="16" class="form-control"></label>
+          <label>권한
+            <select class="custom-select" name="role">
+              <option value="OPERATOR">운영자</option>
+              <option value="ADMIN">관리자</option>
+            </select>
+          </label>
+          <button class="btn btn-primary primary-btn">계정 생성</button>
+        </form>
+      </div>
+      <div class="card panel">
+        <h2>계정 목록</h2>
+        <div class="table-wrap">
+          <table class="table table-hover">
+            <caption class="sr-only">계정 목록</caption>
+            <thead><tr><th>계정명</th><th>권한</th><th>상태</th><th></th></tr></thead>
+            <tbody id="userRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="auditView" class="view" hidden>
+      <p class="section-lead">최근 100건의 업무 변경 기록입니다.</p>
+      <div class="card panel">
+        <div class="table-wrap">
+          <table class="table table-hover">
+            <caption class="sr-only">감사 기록 목록</caption>
+            <thead><tr><th>시각</th><th>수행자</th><th>작업</th><th>대상</th></tr></thead>
+            <tbody id="auditRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="passwordView" class="view" hidden>
+      <p class="section-lead">비밀번호 변경 후 다시 로그인해야 합니다.</p>
+      <div class="card panel narrow">
+        <h2>내 비밀번호 변경</h2>
+        <form id="passwordForm" class="form-grid">
+          <label>현재 비밀번호<input name="currentPassword" type="password" required class="form-control"></label>
+          <label>새 비밀번호<input name="nextPassword" type="password" required minlength="16" maxlength="128" class="form-control"></label>
+          <button class="btn btn-primary primary-btn" type="submit">비밀번호 변경</button>
+        </form>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

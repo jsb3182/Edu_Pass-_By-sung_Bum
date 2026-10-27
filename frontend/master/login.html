@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>관리자 로그인</title>
+  <link rel="stylesheet" href="/shared/assets/vendor/bootstrap.min.css">
+  <link rel="stylesheet" href="/shared/assets/css/krds-theme.css">
+  <link rel="stylesheet" href="/shared/assets/css/app.css">
+  <script src="/master/js/login.js" defer></script>
+</head>
+<body class="sign-body">
+  <a class="krds-skip-link" href="#mainContent">본문으로 바로가기</a>
+  <main class="login-shell" id="mainContent">
+    <header class="sign-header">
+      <span class="brand-mark">✓</span>
+      <div>
+        <strong>방문 기록</strong>
+        <small>EDUCATION OFFICE</small>
+      </div>
+    </header>
+    <div class="krds-identity" role="note">
+      <span class="krds-identity-mark" aria-hidden="true">i</span>
+      관리자 계정으로만 이용할 수 있는 업무 화면입니다.
+    </div>
+    <nav class="krds-breadcrumb" aria-label="현재 위치">
+      <span>방문 기록</span><span class="separator" aria-hidden="true">›</span>
+      <strong aria-current="page">관리자 로그인</strong>
+    </nav>
+
+    <section class="card sign-card">
+      <div class="login-emblem" aria-hidden="true">✓</div>
+      <span class="eyebrow">ADMIN ACCESS</span>
+      <h1>관리자 로그인</h1>
+      <p class="muted">기관에서 발급한 계정으로 로그인하세요.</p>
+      <p class="krds-field-hint"><span class="krds-required">*</span> 표시는 필수 입력 항목입니다.</p>
+      <div id="loginMessage" class="alert message error" role="alert" hidden></div>
+      <form class="login-form" action="/login" method="post">
+        <input id="loginCsrf" type="hidden" name="_csrf">
+        <label>계정명
+          <input name="username" autocomplete="username" required autofocus class="form-control">
+        </label>
+        <label>비밀번호
+          <input name="password" type="password" autocomplete="current-password" required class="form-control">
+        </label>
+        <button id="loginButton" class="btn btn-primary primary-btn wide" type="submit" disabled>로그인 준비 중…</button>
+      </form>
+    </section>
+  </main>
+</body>
+</html>
