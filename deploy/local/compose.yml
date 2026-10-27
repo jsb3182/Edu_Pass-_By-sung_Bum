@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: boundary
+      POSTGRES_USER: boundary
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in an untracked .env file}
+    volumes:
+      - boundary_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U boundary -d boundary"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+  app:
+    build: ../..
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${LOCAL_HTTP_PORT:-8080}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      SERVER_ADDRESS: 0.0.0.0
+      DB_URL: jdbc:postgresql://db:5432/boundary
+      DB_USER: boundary
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD}
+      APP_NODE_ID: ${APP_NODE_ID:?Set APP_NODE_ID}
+      APP_PUBLIC_BASE_URL: ${APP_PUBLIC_BASE_URL:?Set APP_PUBLIC_BASE_URL}
+      BOOTSTRAP_ADMIN_USER: ${BOOTSTRAP_ADMIN_USER:?Set BOOTSTRAP_ADMIN_USER}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:?Set BOOTSTRAP_ADMIN_PASSWORD}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-true}
+volumes:
+  boundary_db:
+

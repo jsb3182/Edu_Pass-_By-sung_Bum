@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>관리자 로그인 미리보기</title>
+  <link rel="stylesheet" href="../src/main/resources/static/vendor/bootstrap.min.css">
+  <link rel="stylesheet" href="../src/main/resources/static/css/krds-theme.css">
+  <link rel="stylesheet" href="../src/main/resources/static/css/app.css">
+  <link rel="stylesheet" href="preview.css">
+  <script src="preview.js" defer></script>
+</head>
+<body class="sign-body">
+  <a class="krds-skip-link" href="#mainContent">본문으로 바로가기</a>
+  <main class="login-shell" id="mainContent">
+    <div class="preview-banner">화면 미리보기 · 로그인 정보는 전송되지 않습니다. <a href="admin.html">관리자 화면 보기 →</a></div>
+    <header class="sign-header">
+      <span class="brand-mark">✓</span>
+      <div><strong>방문 기록</strong><small>EDUCATION OFFICE</small></div>
+    </header>
+    <div class="krds-identity" role="note">
+      <span class="krds-identity-mark" aria-hidden="true">i</span>
+      관리자 계정으로만 이용할 수 있는 업무 화면입니다.
+    </div>
+    <nav class="krds-breadcrumb" aria-label="현재 위치">
+      <span>방문 기록</span><span class="separator" aria-hidden="true">›</span>
+      <strong aria-current="page">관리자 로그인</strong>
+    </nav>
+    <section class="card sign-card">
+      <div class="login-emblem" aria-hidden="true">✓</div>
+      <span class="eyebrow">ADMIN ACCESS</span>
+      <h1>관리자 로그인</h1>
+      <p class="muted">기관에서 발급한 계정으로 로그인하세요.</p>
+      <div class="login-form">
+        <label>계정명<input placeholder="계정명 예시" readonly class="form-control"></label>
+        <label>비밀번호<input type="password" placeholder="비밀번호 예시" readonly class="form-control"></label>
+        <button class="btn btn-primary primary-btn wide demo-button" type="button">로그인</button>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

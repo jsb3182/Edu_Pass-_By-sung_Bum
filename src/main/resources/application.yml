@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: boundary-records
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 8
+      connection-timeout: 10000
+  flyway:
+    enabled: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+server:
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        same-site: strict
+        secure: ${SESSION_COOKIE_SECURE:true}
+      timeout: 30m
+  error:
+    include-message: never
+    include-stacktrace: never
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+app:
+  node-id: ${APP_NODE_ID}
+  public-base-url: ${APP_PUBLIC_BASE_URL}
+  bootstrap-admin:
+    username: ${BOOTSTRAP_ADMIN_USER:}
+    password: ${BOOTSTRAP_ADMIN_PASSWORD:}
+

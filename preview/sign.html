@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>방문자 서명 화면 미리보기</title>
+  <link rel="stylesheet" href="../src/main/resources/static/vendor/bootstrap.min.css">
+  <link rel="stylesheet" href="../src/main/resources/static/css/krds-theme.css">
+  <link rel="stylesheet" href="../src/main/resources/static/css/app.css">
+  <link rel="stylesheet" href="preview.css">
+  <script src="preview.js" defer></script>
+</head>
+<body class="sign-body">
+  <a class="krds-skip-link" href="#mainContent">본문으로 바로가기</a>
+  <main class="sign-shell" id="mainContent">
+    <div class="preview-banner">화면 미리보기 · 서명은 저장되지 않으며 위치도 조회하지 않습니다. <a href="admin.html">← 관리자 화면 보기</a></div>
+    <header class="sign-header"><span class="brand-mark">✓</span><div><strong>현장 방문 확인</strong><small>VISITOR SIGNATURE</small></div></header>
+    <div class="krds-identity" role="note">
+      <span class="krds-identity-mark" aria-hidden="true">i</span>
+      방문 내역을 확인한 뒤 본인이 직접 서명해 주세요.
+    </div>
+    <nav class="krds-breadcrumb" aria-label="현재 위치">
+      <span>방문 기록</span><span class="separator" aria-hidden="true">›</span>
+      <strong aria-current="page">현장 방문 확인</strong>
+    </nav>
+    <section class="card sign-card">
+      <ol class="sign-steps" aria-label="서명 절차">
+        <li class="active" aria-current="step">01 내역 확인</li>
+        <li>02 직접 서명</li>
+        <li>03 저장 완료</li>
+      </ol>
+      <span class="eyebrow">RECORD CONFIRMATION</span>
+      <h1>방문 내역을 확인하고 서명해 주세요</h1>
+      <dl class="record-summary">
+        <div><dt>신청번호</dt><dd>EDU-2026-00124</dd></div>
+        <div><dt>신청자</dt><dd>김민서</dd></div>
+        <div><dt>학교명</dt><dd>가온초등학교</dd></div>
+        <div><dt>진행상태</dt><dd>심사 중</dd></div>
+        <div><dt>서명자</dt><dd>최하늘</dd></div>
+        <div><dt>소속</dt><dd>시도교육청</dd></div>
+        <div><dt>방문 목적</dt><dd>심사</dd></div>
+      </dl>
+      <div class="sign-pad-heading"><h2>직접 서명</h2><button id="clearPreview" class="btn btn-light ghost-btn" type="button">다시 쓰기</button></div>
+      <div class="canvas-frame"><canvas id="previewCanvas" aria-label="서명 연습 영역"></canvas><span id="previewHint">여기에 서명해 주세요</span></div>
+      <div class="location-card"><strong>현장 위치</strong><p>위치 기록은 선택 사항입니다.</p><label class="consent"><input type="checkbox" disabled class="form-check-input"><span>현장 위치의 확인과 저장에 동의합니다.</span></label><button class="btn btn-outline-primary secondary-btn" disabled>위치 확인</button></div>
+      <label class="consent"><input type="checkbox" id="previewConsent" class="form-check-input"><span>위 방문 내역을 확인했으며, 서명 및 방문 내역의 저장에 동의합니다.</span></label>
+      <button id="previewSubmit" class="btn btn-primary primary-btn wide" type="button">서명 완료 및 저장</button>
+      <p id="previewResult" class="fineprint">미리보기이므로 실제 기록은 저장되지 않습니다.</p>
+    </section>
+  </main>
+</body>
+</html>
+

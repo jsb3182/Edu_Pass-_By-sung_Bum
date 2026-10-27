@@ -1,0 +1,39 @@
+{
+  "family": "boundary-records",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "<ECS_EXECUTION_ROLE_ARN>",
+  "taskRoleArn": "<LEAST_PRIVILEGE_TASK_ROLE_ARN>",
+  "containerDefinitions": [
+    {
+      "name": "boundary-records",
+      "image": "<APPROVED_PRIVATE_ECR_IMAGE>",
+      "essential": true,
+      "portMappings": [{"containerPort": 8080, "protocol": "tcp"}],
+      "environment": [
+        {"name": "SPRING_PROFILES_ACTIVE", "value": "aws"},
+        {"name": "APP_NODE_ID", "value": "aws-seoul-01"},
+        {"name": "APP_PUBLIC_BASE_URL", "value": "https://<APPROVED_HOSTNAME>"},
+        {"name": "DB_USER", "value": "boundary_app"},
+        {"name": "SESSION_COOKIE_SECURE", "value": "true"}
+      ],
+      "secrets": [
+        {"name": "DB_URL", "valueFrom": "<APPROVED_RDS_JDBC_URL_SECRET_ARN>"},
+        {"name": "DB_PASSWORD", "valueFrom": "<RDS_PASSWORD_SECRET_ARN>"},
+        {"name": "BOOTSTRAP_ADMIN_USER", "valueFrom": "<BOOTSTRAP_USERNAME_SECRET_ARN>"},
+        {"name": "BOOTSTRAP_ADMIN_PASSWORD", "valueFrom": "<BOOTSTRAP_PASSWORD_SECRET_ARN>"}
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "<APPROVED_LOG_GROUP>",
+          "awslogs-region": "ap-northeast-2",
+          "awslogs-stream-prefix": "boundary-records"
+        }
+      }
+    }
+  ]
+}
+

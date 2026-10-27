@@ -1,0 +1,98 @@
+/*
+ * 공공서비스 화면을 위한 로컬 디자인 토큰과 접근성 구성요소입니다.
+ * KRDS 공식 배포 파일이 아니므로 공식 적합성 인증을 뜻하지 않습니다.
+ */
+:root {
+  --krds-primary: #246beb;
+  --krds-primary-hover: #1d56bc;
+  --krds-text: #1d1d1d;
+  --krds-text-secondary: #4b5563;
+  --krds-border: #d6dce4;
+  --krds-surface: #f5f7fb;
+  --krds-focus: #0047b0;
+}
+
+.krds-skip-link {
+  position: fixed;
+  top: -80px;
+  left: 16px;
+  z-index: 1000;
+  padding: 12px 18px;
+  border-radius: 8px;
+  background: var(--krds-text);
+  color: #fff;
+  font-weight: 700;
+}
+.krds-skip-link:focus {
+  top: 12px;
+  color: #fff;
+}
+
+.krds-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding: 10px 14px;
+  border: 1px solid #d5e5ff;
+  border-radius: 10px;
+  background: #eef5ff;
+  color: #16478f;
+  font-size: 12px;
+  font-weight: 700;
+}
+.krds-identity-mark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #dceaff;
+  font-size: 12px;
+}
+.krds-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  color: var(--krds-text-secondary);
+  font-size: 12px;
+}
+.krds-breadcrumb strong { color: var(--krds-text); font-weight: 700; }
+.krds-breadcrumb .separator { color: #8b95a2; }
+
+.krds-field-hint {
+  margin: 0 0 16px;
+  color: var(--krds-text-secondary);
+  font-size: 12px;
+}
+.krds-required { color: #c83b32; font-weight: 800; }
+.krds-table-link {
+  min-height: 44px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #174ea8;
+  padding: 8px 10px;
+  text-align: left;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.krds-table-link:hover { background: #edf4ff; color: #123e87; }
+.krds-table-link:focus { outline: 0; }
+.krds-table-link:focus-visible,
+.btn:focus-visible,
+.nav-item:focus-visible,
+.form-control:focus-visible,
+.custom-select:focus-visible {
+  outline: 3px solid var(--krds-focus);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+@media (max-width: 575px) {
+  .krds-identity { font-size: 11px; }
+}

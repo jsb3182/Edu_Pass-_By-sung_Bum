@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>방문자 서명</title>
+  <link rel="stylesheet" href="/vendor/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/krds-theme.css">
+  <link rel="stylesheet" href="/css/app.css">
+  <script src="/js/sign.js" defer></script>
+</head>
+<body class="sign-body">
+  <a class="krds-skip-link" href="#mainContent">본문으로 바로가기</a>
+  <main class="sign-shell" id="mainContent">
+    <header class="sign-header">
+      <span class="brand-mark">✓</span>
+      <div>
+        <strong>현장 방문 확인</strong>
+        <small>VISITOR SIGNATURE</small>
+      </div>
+    </header>
+    <div class="krds-identity" role="note">
+      <span class="krds-identity-mark" aria-hidden="true">i</span>
+      방문 내역을 확인한 뒤 본인이 직접 서명해 주세요.
+    </div>
+    <nav class="krds-breadcrumb" aria-label="현재 위치">
+      <span>방문 기록</span><span class="separator" aria-hidden="true">›</span>
+      <strong aria-current="page">현장 방문 확인</strong>
+    </nav>
+
+    <div id="signError" class="alert message error" role="alert" hidden></div>
+
+    <section id="signPanel" class="card sign-card" hidden>
+      <ol class="sign-steps" aria-label="서명 절차">
+        <li class="active" aria-current="step">01 내역 확인</li>
+        <li>02 직접 서명</li>
+        <li>03 저장 완료</li>
+      </ol>
+      <span class="eyebrow">RECORD CONFIRMATION</span>
+      <h1>방문 내역을 확인하고 서명해 주세요</h1>
+
+      <dl class="record-summary">
+        <div><dt>신청번호</dt><dd id="signApplication"></dd></div>
+        <div><dt>신청자</dt><dd id="signApplicant"></dd></div>
+        <div><dt>학교명</dt><dd id="signSchool"></dd></div>
+        <div><dt>진행상태</dt><dd id="signStatus"></dd></div>
+        <div><dt>서명자</dt><dd id="signSigner"></dd></div>
+        <div><dt>소속</dt><dd id="signAffiliation"></dd></div>
+        <div><dt>방문 목적</dt><dd id="signPurpose"></dd></div>
+      </dl>
+
+      <div class="sign-pad-heading">
+        <h2>직접 서명</h2>
+        <button id="clearSignature" class="btn btn-light ghost-btn" type="button">다시 쓰기</button>
+      </div>
+      <div class="canvas-frame">
+        <canvas id="signatureCanvas" aria-label="손가락이나 펜으로 서명하는 영역"></canvas>
+        <span id="canvasHint">여기에 서명해 주세요</span>
+      </div>
+
+      <div class="location-card">
+        <strong>현장 위치</strong>
+        <p id="locationMessage">위치 기록은 선택 사항입니다. 동의 후 확인하면 좌표와 정확도가 저장됩니다.</p>
+        <label class="consent">
+          <input type="checkbox" id="locationConsentCheck" class="form-check-input">
+          <span id="locationConsentText"></span>
+        </label>
+        <button id="checkLocation" class="btn btn-outline-primary secondary-btn" type="button">위치 확인</button>
+      </div>
+
+      <label class="consent">
+        <input type="checkbox" id="consentCheck" class="form-check-input">
+        <span id="consentText"></span>
+      </label>
+      <button id="submitSignature" class="btn btn-primary primary-btn wide" type="button">서명 완료 및 저장</button>
+      <p class="fineprint">
+        저장 완료 메시지가 표시될 때까지 화면을 닫지 마세요.
+        위치 접근이 거부되면 그 사실이 기록됩니다.
+      </p>
+    </section>
+
+    <section id="successPanel" class="card sign-card success-card" hidden>
+      <div class="success-mark">✓</div>
+      <h1>서명이 저장되었습니다</h1>
+      <p>담당자에게 완료 화면을 보여주세요.</p>
+      <code id="receiptId"></code>
+    </section>
+  </main>
+</body>
+</html>
