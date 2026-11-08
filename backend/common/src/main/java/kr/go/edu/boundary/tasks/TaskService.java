@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import kr.go.edu.boundary.tasks.dto.TaskPage;
 import kr.go.edu.boundary.common.ApplicationNumbers;
 import kr.go.edu.boundary.common.AuditWriter;
 import kr.go.edu.boundary.common.OutboxWriter;
@@ -108,7 +109,5 @@ public class TaskService {
                 result.getString("school_name"), result.getString("status"), result.getString("source"),
                 result.getObject("updated_at", java.time.OffsetDateTime.class), result.getLong("version"));
     }
-
-    public record TaskPage(List<TaskRecord> items, long total, int page, int size) { }
 }
 

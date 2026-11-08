@@ -3,8 +3,9 @@ package kr.go.edu.boundary.tasks;
 import java.util.UUID;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import kr.go.edu.boundary.tasks.dto.CreateTaskRequest;
+import kr.go.edu.boundary.tasks.dto.ChangeTaskStatusRequest;
+import kr.go.edu.boundary.tasks.dto.TaskPage;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,7 +26,7 @@ public class TaskController {
     }
 
     @GetMapping
-    public TaskService.TaskPage list(@RequestParam(defaultValue = "") String query,
+    public TaskPage list(@RequestParam(defaultValue = "") String query,
             @RequestParam(defaultValue = "0") int page) {
         return tasks.list(query, page);
     }
@@ -36,20 +37,15 @@ public class TaskController {
     }
 
     @PostMapping
-    public TaskRecord create(@Valid @RequestBody CreateTask request, Authentication authentication) {
+    public TaskRecord create(@Valid @RequestBody CreateTaskRequest request, Authentication authentication) {
         return tasks.create(request.applicationNo(), request.applicantName(), request.schoolName(),
                 request.status(), authentication.getName());
     }
 
     @PutMapping("/{id}/status")
-    public TaskRecord status(@PathVariable UUID id, @Valid @RequestBody ChangeStatus request,
+    public TaskRecord status(@PathVariable UUID id, @Valid @RequestBody ChangeTaskStatusRequest request,
             Authentication authentication) {
         return tasks.changeStatus(id, request.status(), request.version(), authentication.getName());
     }
 
-    public record CreateTask(@NotBlank @Size(max = 120) String applicationNo, @NotBlank @Size(max = 200) String applicantName,
-            @NotBlank @Size(max = 200) String schoolName, @NotBlank @Size(max = 100) String status) { }
-
-    public record ChangeStatus(@NotBlank @Size(max = 100) String status, long version) { }
 }
-
