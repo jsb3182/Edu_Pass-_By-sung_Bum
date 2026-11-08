@@ -1,4 +1,4 @@
-param([ValidateRange(1024, 65535)][int]$Port = 8080)
+﻿param([ValidateRange(1024, 65535)][int]$Port = 8080)
 $ErrorActionPreference = 'Stop'
 
 # 최초 한 번만 생성합니다. 재실행해도 기존 DB/관리자 비밀번호를 바꾸지 않습니다.

@@ -1,5 +1,18 @@
 # 로컬 PC·태블릿 연결
 
+## 이 PC에서 바로 실행
+
+프로젝트 최상위의 `로컬실행.cmd`를 더블클릭하세요.
+Docker 엔진을 확인하고 DB와 서버를 시작한 뒤 기본 브라우저에서 로그인 화면을 엽니다.
+처음 설치한 PC에는 Docker Desktop, JDK 17과 Maven이 필요합니다.
+기존 .env가 있으면 그 포트를 사용하며, 없으면 28080 포트로 초기 설정을 생성합니다.
+현재 개발 PC 주소는 **http://127.0.0.1:28080/master/login.html**입니다.
+브라우저 주소창에 그대로 입력해도 됩니다. HTTPS가 아닌 HTTP 주소입니다.
+아이디와 비밀번호는 backend/local/.env의 BOOTSTRAP_ADMIN_USER와 BOOTSTRAP_ADMIN_PASSWORD에서 확인합니다.
+
+시작 스크립트는 기존 JAR이 있으면 사용합니다. 코드를 수정했다면 먼저 mvn package로 다시 빌드하세요.
+브라우저 없이 서버만 실행하려면 `./backend/local/start.ps1 -NoBrowser`를 사용합니다.
+
 ## Docker로 PC에서 서버와 DB 실행
 
 프로젝트 루트에서 실행합니다. 먼저 Docker Desktop의 Linux 엔진을 켜세요.
