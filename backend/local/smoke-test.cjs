@@ -1,0 +1,102 @@
+// Node.js 20+ 필요. 실행 중인 로컬 서버에 검증용 신청 내역 1건을 저장합니다.
+const fs = require('node:fs');
+const path = require('node:path');
+const assert = require('node:assert/strict');
+const { randomUUID } = require('node:crypto');
+
+function readConfig() {
+  const config = {};
+  for (const line of fs.readFileSync(path.join(__dirname, '.env'), 'utf8').split(/\r?\n/)) {
+    const match = line.match(/^([A-Z_]+)=(.*)$/);
+    if (match) config[match[1]] = match[2].trim();
+  }
+  return config;
+}
+
+function browser(base) {
+  const cookies = new Map();
+  return async (route, options = {}) => {
+    const response = await fetch(base + route, {
+      ...options,
+      redirect: 'manual',
+      signal: AbortSignal.timeout(15000),
+      headers: {
+        Cookie: [...cookies].map(([key, value]) => `${key}=${value}`).join('; '),
+        ...options.headers
+      }
+    });
+    for (const cookie of response.headers.getSetCookie()) {
+      const pair = cookie.split(';')[0];
+      const split = pair.indexOf('=');
+      cookies.set(pair.slice(0, split), pair.slice(split + 1));
+    }
+    return response;
+  };
+}
+
+async function main() {
+  const config = readConfig();
+  const base = `http://127.0.0.1:${config.LOCAL_HTTP_PORT || '8080'}`;
+  const admin = browser(base);
+  const visitor = browser(base);
+  const json = async response => {
+    assert.equal(response.status, 200, 'API 응답은 200이어야 합니다.');
+    return response.json();
+  };
+  const post = (body, csrf) => ({
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', [csrf.headerName]: csrf.token },
+    body: JSON.stringify(body)
+  });
+
+  assert.equal((await json(await admin('/actuator/health'))).status, 'UP');
+  assert.equal((await admin('/master/index.html')).status, 302);
+  assert.equal((await visitor('/user/index.html')).status, 200);
+  let csrf = await json(await admin('/api/csrf'));
+  const login = await admin('/login', {
+    method: 'POST',
+    body: new URLSearchParams({
+      username: config.BOOTSTRAP_ADMIN_USER,
+      password: config.BOOTSTRAP_ADMIN_PASSWORD,
+      _csrf: csrf.token
+    })
+  });
+  assert.equal(login.status, 302);
+  assert.ok(login.headers.get('location').endsWith('/master/index.html'), '로그인 성공 경로 확인');
+  const session = await json(await admin('/api/admin/session'));
+  assert.equal(session.mode, 'local');
+  assert.equal(session.role, 'ROLE_ADMIN');
+  assert.equal((await admin('/master/index.html')).status, 200);
+  csrf = await json(await admin('/api/csrf'));
+
+  // 로그인 이후에도 CSRF 없이 쓰기를 수행할 수 없어야 합니다.
+  assert.equal((await admin('/api/admin/tasks', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}'
+  })).status, 403);
+  const task = await json(await admin('/api/admin/tasks', post({
+    applicationNo: `SMOKE-${randomUUID()}`,
+    applicantName: '로컬 연결 검증용', schoolName: '테스트 학교', status: '접수'
+  }, csrf)));
+  assert.equal((await json(await admin(`/api/admin/tasks/${task.id}`))).id, task.id);
+  const issued = await json(await admin('/api/admin/signing-sessions', post({
+    taskId: task.id, signerName: '테스트 방문자', affiliation: '개발 테스트', purpose: 'OTHER'
+  }, csrf)));
+  const url = new URL(issued.url);
+  assert.equal(url.pathname, '/user/index.html');
+  assert.equal(url.origin, new URL(config.APP_PUBLIC_BASE_URL).origin);
+  const token = new URLSearchParams(url.hash.slice(1)).get('token');
+  assert.ok(token);
+  const visitorCsrf = await json(await visitor('/api/csrf'));
+  const details = await json(await visitor('/api/public/signing-sessions/lookup', post({ token }, visitorCsrf)));
+  assert.equal(details.signerName, '테스트 방문자');
+  assert.equal(details.applicationNo, task.applicationNo);
+  console.log(JSON.stringify({
+    result: 'PASS', baseUrl: base, taskId: task.id,
+    checked: ['DB health', '관리자 로그인', '권한 및 CSRF', '내역 저장·조회', '서명 링크 발급·방문자 조회']
+  }, null, 2));
+}
+
+main().catch(error => {
+  console.error('로컬 연결 검증 실패:', error.message);
+  process.exitCode = 1;
+});

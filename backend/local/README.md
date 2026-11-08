@@ -6,11 +6,14 @@
 
 ~~~powershell
 mvn clean package
-Copy-Item backend/local/env.example backend/local/.env
+./backend/local/init-env.ps1
 ~~~
 
-.env의 DB_PASSWORD와 BOOTSTRAP_ADMIN_PASSWORD를 본인 값으로 변경합니다.
-첫 관리자 비밀번호는 16자 이상으로 지정합니다.
+init-env.ps1이 DB와 최초 관리자용 무작위 비밀번호를 생성합니다.
+계정은 .env의 BOOTSTRAP_ADMIN_USER와 BOOTSTRAP_ADMIN_PASSWORD에서 확인합니다.
+이미 .env가 있으면 덮어쓰지 않습니다. .env는 Git에서 제외되어 다른 PC에 전달되지 않습니다.
+8080이 사용 중이면 최초 생성 시 ./backend/local/init-env.ps1 -Port 18080으로 실행하세요.
+기존 설정의 포트를 바꾸려면 .env의 LOCAL_HTTP_PORT와 APP_PUBLIC_BASE_URL을 함께 변경합니다.
 
 ~~~powershell
 docker compose --env-file backend/local/.env -f backend/local/compose.yml config --quiet
@@ -18,6 +21,7 @@ docker compose --env-file backend/local/.env -f backend/local/compose.yml up -d 
 ~~~
 
 PC에서 http://127.0.0.1:8080/master/index.html을 엽니다.
+-Port 18080으로 설정했다면 http://127.0.0.1:18080/master/index.html을 엽니다.
 DB 데이터는 boundary-local 프로젝트의 boundary_db 이름 있는 볼륨에 유지됩니다.
 DB의 5432 포트는 외부에 공개하지 않습니다. 태블릿은 서버의 8080 포트로만 접속합니다.
 
@@ -68,3 +72,20 @@ $env:SESSION_COOKIE_SECURE = 'false'
 IP와 비밀번호를 실제 값으로 바꿔 실행합니다. run.ps1은 .env를 자동으로 읽지 않습니다.
 직접 실행은 위 PowerShell 환경변수를, Docker는 --env-file을 사용합니다.
 SQLite 설정은 제공하지 않습니다. 현재 스키마와 SQL은 PostgreSQL용입니다.
+
+## 서버가 실제로 연결됐는지 확인
+
+서버가 시작된 후 프로젝트 루트에서 실행합니다. Node.js 20 이상이 필요합니다.
+
+~~~powershell
+node backend/local/smoke-test.cjs
+~~~
+
+DB 상태, 관리자 로그인, CSRF 차단, 신청 내역 저장·조회, 서명 링크 발급과 방문자 조회를 검사합니다.
+매번 이름이 로컬 연결 검증용인 신청 내역 1건과 10분짜리 서명 세션 1건을 저장합니다.
+실제 서명은 제출하지 않습니다. 개발용 DB에서 실행하세요.
+로그인 비밀번호를 변경했다면 .env의 BOOTSTRAP_ADMIN_PASSWORD도 현재 값으로 맞춰야 합니다.
+이 값을 바꾸는 것만으로 DB에 이미 있는 관리자 비밀번호가 변경되지는 않습니다.
+
+다른 PC에서는 저장소를 받은 뒤 backend 브랜치로 이동하고 위 초기 설정부터 실행합니다.
+DB 데이터와 .env는 GitHub로 동기화되지 않으므로 PC마다 독립적으로 생성됩니다.
