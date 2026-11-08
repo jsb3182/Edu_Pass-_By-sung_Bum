@@ -48,8 +48,14 @@ async function main() {
     headers: { 'Content-Type': 'application/json', [csrf.headerName]: csrf.token },
     body: JSON.stringify(body)
   });
+  const expectError = async (response, status) => {
+    assert.equal(response.status, status);
+    assert.ok(response.headers.get('content-type')?.includes('application/json'));
+    assert.equal(typeof (await response.json()).error, 'string');
+  };
 
   assert.equal((await json(await admin('/actuator/health'))).status, 'UP');
+  await expectError(await visitor('/api/admin/session'), 401);
   assert.equal((await admin('/master/index.html')).status, 302);
   assert.equal((await visitor('/user/index.html')).status, 200);
   let csrf = await json(await admin('/api/csrf'));
@@ -70,9 +76,23 @@ async function main() {
   csrf = await json(await admin('/api/csrf'));
 
   // 로그인 이후에도 CSRF 없이 쓰기를 수행할 수 없어야 합니다.
-  assert.equal((await admin('/api/admin/tasks', {
+  await expectError(await admin('/api/admin/tasks', {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}'
-  })).status, 403);
+  }), 403);
+  await expectError(await admin('/api/admin/tasks?page=abc'), 400);
+  await expectError(await admin('/api/admin/tasks/not-a-uuid'), 400);
+  await expectError(await admin('/api/admin/tasks', { ...post({}, csrf), body: '{' }), 400);
+  await expectError(await admin('/api/admin/imports', {
+    method: 'POST', headers: { [csrf.headerName]: csrf.token }, body: new FormData()
+  }), 400);
+  const oversizedFile = new FormData();
+  oversizedFile.set('file', new Blob([new Uint8Array(10 * 1024 * 1024 + 1)]), 'oversized.xlsx');
+  await expectError(await admin('/api/admin/imports', {
+    method: 'POST', headers: { [csrf.headerName]: csrf.token }, body: oversizedFile
+  }), 413);
+  await expectError(await admin('/api/admin/users', post({
+    username: `invalid-${randomUUID()}`, password: '한'.repeat(25), role: 'OPERATOR'
+  }, csrf)), 400);
   const task = await json(await admin('/api/admin/tasks', post({
     applicationNo: `SMOKE-${randomUUID()}`,
     applicantName: '로컬 연결 검증용', schoolName: '테스트 학교', status: '접수'
@@ -112,7 +132,8 @@ async function main() {
   assert.equal(details.applicationNo, task.applicationNo);
   console.log(JSON.stringify({
     result: 'PASS', baseUrl: base, taskId: task.id,
-    checked: ['DB health', '관리자 로그인', '권한 및 CSRF', '내역 저장·검색·조회',
+    checked: ['DB health', '관리자 로그인', 'JSON 인증·CSRF·입력 오류', '업로드 누락·용량 초과',
+      '비밀번호 바이트 제한', '내역 저장·검색·조회',
       '입력 검증 및 중복 차단', '상태 변경 및 동시 수정 충돌', '서명 링크 발급·방문자 조회']
   }, null, 2));
 }
