@@ -78,6 +78,26 @@ async function main() {
     applicantName: '로컬 연결 검증용', schoolName: '테스트 학교', status: '접수'
   }, csrf)));
   assert.equal((await json(await admin(`/api/admin/tasks/${task.id}`))).id, task.id);
+  const page = await json(await admin(`/api/admin/tasks?query=${encodeURIComponent(task.applicationNo)}&page=0`));
+  assert.equal(page.total, 1);
+  assert.equal(page.page, 0);
+  assert.equal(page.size, 50);
+  assert.equal(page.items[0].id, task.id);
+  assert.equal((await admin('/api/admin/tasks', post({
+    applicationNo: task.applicationNo, applicantName: '중복 검증', schoolName: '학교', status: '접수'
+  }, csrf))).status, 409);
+  assert.equal((await admin('/api/admin/tasks', post({
+    applicationNo: 'INVALID', applicantName: '', schoolName: '학교', status: '접수'
+  }, csrf))).status, 400);
+
+  const changeStatus = status => admin(`/api/admin/tasks/${task.id}/status`, {
+    ...post({ status, version: task.version }, csrf), method: 'PUT'
+  });
+  const updated = await json(await changeStatus('심사'));
+  assert.equal(updated.version, task.version + 1);
+  assert.equal(updated.status, '심사');
+  assert.equal((await changeStatus('덮어쓰기')).status, 409);
+  assert.equal((await json(await admin(`/api/admin/tasks/${task.id}`))).status, '심사');
   const issued = await json(await admin('/api/admin/signing-sessions', post({
     taskId: task.id, signerName: '테스트 방문자', affiliation: '개발 테스트', purpose: 'OTHER'
   }, csrf)));
@@ -92,7 +112,8 @@ async function main() {
   assert.equal(details.applicationNo, task.applicationNo);
   console.log(JSON.stringify({
     result: 'PASS', baseUrl: base, taskId: task.id,
-    checked: ['DB health', '관리자 로그인', '권한 및 CSRF', '내역 저장·조회', '서명 링크 발급·방문자 조회']
+    checked: ['DB health', '관리자 로그인', '권한 및 CSRF', '내역 저장·검색·조회',
+      '입력 검증 및 중복 차단', '상태 변경 및 동시 수정 충돌', '서명 링크 발급·방문자 조회']
   }, null, 2));
 }
 
