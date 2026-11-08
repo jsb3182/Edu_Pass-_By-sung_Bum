@@ -13,9 +13,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 public class ActiveAccountFilter extends OncePerRequestFilter {
     private final JdbcTemplate jdbc;
+    private final ApiSecurityErrors apiErrors;
 
-    public ActiveAccountFilter(JdbcTemplate jdbc) {
+    public ActiveAccountFilter(JdbcTemplate jdbc, ApiSecurityErrors apiErrors) {
         this.jdbc = jdbc;
+        this.apiErrors = apiErrors;
     }
 
     @Override
@@ -33,7 +35,8 @@ public class ActiveAccountFilter extends OncePerRequestFilter {
                 if (session != null) {
                     session.invalidate();
                 }
-                response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                SecurityContextHolder.clearContext();
+                apiErrors.inactiveAccount(request, response);
                 return;
             }
         }

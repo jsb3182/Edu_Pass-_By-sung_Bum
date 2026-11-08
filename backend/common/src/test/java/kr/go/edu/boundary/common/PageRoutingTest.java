@@ -15,6 +15,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(PageController.class)
@@ -60,5 +61,35 @@ class PageRoutingTest {
         mvc.perform(get("/login.html")).andExpect(redirectedUrl("/master/login.html"));
         mvc.perform(get("/admin.html").with(user("admin").roles("ADMIN")))
                 .andExpect(redirectedUrl("/master/index.html"));
+    }
+
+    @Test
+    void anonymousApiGetsJsonInsteadOfLoginHtml() throws Exception {
+        mvc.perform(get("/api/admin/session").servletPath("/api/admin/session"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith("application/json"))
+                .andExpect(jsonPath("$.error").value(containsString("로그인")))
+                .andExpect(header().doesNotExist("Location"));
+    }
+
+    @Test
+    void missingCsrfAndInsufficientRoleGetJson() throws Exception {
+        mvc.perform(post("/api/admin/tasks").servletPath("/api/admin/tasks")
+                        .with(user("admin").roles("ADMIN")))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value(containsString("새로고침")));
+        mvc.perform(get("/api/admin/users").servletPath("/api/admin/users")
+                        .with(user("operator").roles("OPERATOR")))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value(containsString("권한")));
+    }
+
+    @Test
+    void disabledAccountApiGetsJson() throws Exception {
+        when(jdbc.queryForObject(anyString(), eq(Long.class), anyString())).thenReturn(0L);
+        mvc.perform(get("/api/admin/session").servletPath("/api/admin/session")
+                        .with(user("disabled").roles("ADMIN")))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value(containsString("비활성화")));
     }
 }

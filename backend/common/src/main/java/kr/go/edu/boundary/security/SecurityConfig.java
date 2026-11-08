@@ -1,5 +1,6 @@
 package kr.go.edu.boundary.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -10,6 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -38,7 +40,13 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http, JdbcTemplate jdbc) throws Exception {
+    ApiSecurityErrors apiSecurityErrors(ObjectMapper mapper) {
+        return new ApiSecurityErrors(mapper);
+    }
+
+    @Bean
+    SecurityFilterChain filterChain(HttpSecurity http, JdbcTemplate jdbc, ApiSecurityErrors apiErrors) throws Exception {
+        var loginEntryPoint = new LoginUrlAuthenticationEntryPoint("/master/login.html");
         return http
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/master/login.html", "/user/**", "/shared/assets/**",
@@ -58,7 +66,13 @@ public class SecurityConfig {
                 .formLogin(form -> form.loginPage("/master/login.html").loginProcessingUrl("/login")
                         .defaultSuccessUrl("/master/index.html", true).permitAll())
                 .logout(logout -> logout.logoutSuccessUrl("/master/login.html?logout"))
-                .addFilterAfter(new ActiveAccountFilter(jdbc), UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(errors -> errors
+                        .authenticationEntryPoint((request, response, exception) -> {
+                            if (ApiSecurityErrors.isApiRequest(request)) apiErrors.commence(request, response, exception);
+                            else loginEntryPoint.commence(request, response, exception);
+                        })
+                        .accessDeniedHandler(apiErrors))
+                .addFilterAfter(new ActiveAccountFilter(jdbc, apiErrors), UsernamePasswordAuthenticationFilter.class)
                 .headers(headers -> headers
                         .referrerPolicy(policy -> policy.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER))
                         .contentSecurityPolicy(policy -> policy.policyDirectives(
