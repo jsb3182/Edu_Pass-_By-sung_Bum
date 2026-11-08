@@ -9,7 +9,8 @@ import java.io.ByteArrayOutputStream;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.Test;
 
-class ExcelImportServiceTest {
+class ExcelImportParserTest {
+    private final ExcelImportParser parser = new ExcelImportParser();
     @Test
     void catchesNormalizedDuplicatesBeforeAnyDatabaseWrite() throws Exception {
         byte[] workbook = workbook(new String[][] {
@@ -17,7 +18,7 @@ class ExcelImportServiceTest {
                 {"AB-123", "홍길동", "가학교", "접수"},
                 {"ab / 123", "김영희", "나학교", "심사"}
         });
-        assertThrows(IllegalArgumentException.class, () -> ExcelImportService.parse(workbook));
+        assertThrows(IllegalArgumentException.class, () -> parser.parse(workbook));
     }
 
     @Test
@@ -26,7 +27,7 @@ class ExcelImportServiceTest {
                 {"학교명", "진행상태", "신청번호", "신청자"},
                 {"가학교", "심사", "A-001", "홍길동"}
         });
-        var rows = ExcelImportService.parse(workbook);
+        var rows = parser.parse(workbook);
         assertEquals(1, rows.size());
         assertEquals("A001", rows.get(0).cleanNo());
         assertEquals("심사", rows.get(0).status());
@@ -41,8 +42,39 @@ class ExcelImportServiceTest {
             book.write(output);
             workbook = output.toByteArray();
         }
-        var error = assertThrows(IllegalArgumentException.class, () -> ExcelImportService.parse(workbook));
+        var error = assertThrows(IllegalArgumentException.class, () -> parser.parse(workbook));
         assertTrue(error.getMessage().contains("첫 번째 행"));
+    }
+
+    @Test
+    void rejectsFormulaCellsInsteadOfEvaluatingThem() throws Exception {
+        byte[] bytes;
+        try (XSSFWorkbook book = new XSSFWorkbook(); ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            var sheet = book.createSheet();
+            var header = sheet.createRow(0);
+            String[] names = {"신청번호", "신청자", "학교명", "진행상태"};
+            for (int i = 0; i < names.length; i++) header.createCell(i).setCellValue(names[i]);
+            var row = sheet.createRow(1);
+            row.createCell(0).setCellValue("A-001");
+            row.createCell(1).setCellFormula("1+1");
+            row.createCell(2).setCellValue("학교");
+            row.createCell(3).setCellValue("접수");
+            book.write(output);
+            bytes = output.toByteArray();
+        }
+        var error = assertThrows(IllegalArgumentException.class, () -> parser.parse(bytes));
+        assertTrue(error.getMessage().contains("수식"));
+    }
+
+    @Test
+    void rejectsIncompleteRowsEvenAfterAValidRow() throws Exception {
+        byte[] bytes = workbook(new String[][] {
+                {"신청번호", "신청자", "학교명", "진행상태"},
+                {"A-001", "방문자", "학교", "접수"},
+                {"A-002", "", "학교", "접수"}
+        });
+        var error = assertThrows(IllegalArgumentException.class, () -> parser.parse(bytes));
+        assertTrue(error.getMessage().contains("3행"));
     }
 
     private static byte[] workbook(String[][] rows) throws Exception {
