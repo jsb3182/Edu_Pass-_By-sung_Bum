@@ -36,9 +36,10 @@ public class BootstrapAdmin implements ApplicationRunner {
             if (count != null && count > 0) {
                 return;
             }
-            if (username.isBlank() || password.length() < 16) {
-                throw new IllegalStateException("최초 실행에는 BOOTSTRAP_ADMIN_USER와 16자 이상의 BOOTSTRAP_ADMIN_PASSWORD가 필요합니다.");
+            if (username.isBlank()) {
+                throw new IllegalStateException("최초 실행에는 BOOTSTRAP_ADMIN_USER가 필요합니다.");
             }
+            PasswordPolicy.validate(password);
             jdbc.update("INSERT INTO users(id, username, password_hash, role) VALUES (?, ?, ?, 'ADMIN')",
                     UUID.randomUUID(), username, encoder.encode(password));
         });

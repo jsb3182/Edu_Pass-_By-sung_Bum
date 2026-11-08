@@ -206,7 +206,7 @@
         <h2>계정 추가</h2>
         <form id="userForm" class="form-grid">
           <label>계정명<input name="username" required minlength="3" class="form-control"></label>
-          <label>초기 비밀번호<input name="password" type="password" required minlength="16" class="form-control"></label>
+          <label>초기 비밀번호<input name="password" type="password" required minlength="16" maxlength="72" aria-describedby="userPasswordHint" class="form-control"></label>
           <label>권한
             <select class="custom-select" name="role">
               <option value="OPERATOR">운영자</option>
@@ -215,6 +215,7 @@
           </label>
           <button class="btn btn-primary primary-btn">계정 생성</button>
         </form>
+        <p id="userPasswordHint" class="krds-field-hint">비밀번호는 16자 이상, 영문·숫자만 사용하면 최대 72자, 한글만 사용하면 최대 24자입니다. 혼합 입력은 UTF-8 72바이트까지 가능합니다.</p>
       </div>
       <div class="card panel">
         <h2>계정 목록</h2>
@@ -247,9 +248,10 @@
         <h2>내 비밀번호 변경</h2>
         <form id="passwordForm" class="form-grid">
           <label>현재 비밀번호<input name="currentPassword" type="password" required class="form-control"></label>
-          <label>새 비밀번호<input name="nextPassword" type="password" required minlength="16" maxlength="128" class="form-control"></label>
+          <label>새 비밀번호<input name="nextPassword" type="password" required minlength="16" maxlength="72" aria-describedby="newPasswordHint" class="form-control"></label>
           <button class="btn btn-primary primary-btn" type="submit">비밀번호 변경</button>
         </form>
+        <p id="newPasswordHint" class="krds-field-hint">새 비밀번호는 16자 이상, 영문·숫자만 사용하면 최대 72자, 한글만 사용하면 최대 24자입니다. 혼합 입력은 UTF-8 72바이트까지 가능합니다.</p>
       </div>
     </section>
   </main>

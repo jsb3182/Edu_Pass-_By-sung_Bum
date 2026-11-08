@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import kr.go.edu.boundary.common.AuditWriter;
+import kr.go.edu.boundary.security.PasswordPolicy;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -54,9 +55,7 @@ public class AdminService {
         if (username == null || !username.matches("[A-Za-z0-9._-]{3,120}")) {
             throw new IllegalArgumentException("계정명은 영문·숫자·점·밑줄·하이픈 3~120자로 입력하세요.");
         }
-        if (password == null || password.length() < 16 || password.length() > 128) {
-            throw new IllegalArgumentException("비밀번호는 16~128자로 입력하세요.");
-        }
+        PasswordPolicy.validate(password);
         if (!"ADMIN".equals(role) && !"OPERATOR".equals(role)) {
             throw new IllegalArgumentException("권한이 올바르지 않습니다.");
         }
@@ -91,8 +90,9 @@ public class AdminService {
 
     @Transactional
     public void changePassword(String username, String currentPassword, String nextPassword) {
-        if (nextPassword == null || nextPassword.length() < 16 || nextPassword.length() > 128) {
-            throw new IllegalArgumentException("새 비밀번호는 16~128자로 입력하세요.");
+        PasswordPolicy.validate(nextPassword);
+        if (currentPassword == null || currentPassword.isEmpty()) {
+            throw new IllegalArgumentException("현재 비밀번호를 입력하세요.");
         }
         String oldHash = jdbc.queryForObject("SELECT password_hash FROM users WHERE username = ? AND active = true",
                 String.class, username);
