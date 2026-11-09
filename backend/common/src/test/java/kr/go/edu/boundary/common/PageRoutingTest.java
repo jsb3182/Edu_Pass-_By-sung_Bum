@@ -1,5 +1,7 @@
 package kr.go.edu.boundary.common;
 
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.RequestDispatcher;
 import kr.go.edu.boundary.security.SecurityConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -91,5 +93,19 @@ class PageRoutingTest {
                         .with(user("disabled").roles("ADMIN")))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.error").value(containsString("비활성화")));
+    }
+
+    @Test
+    void internalErrorDispatchPreservesStatusWithoutExposingDetails() throws Exception {
+        mvc.perform(get("/error").accept("application/json").with(request -> {
+            request.setDispatcherType(DispatcherType.ERROR);
+            request.setAttribute(RequestDispatcher.ERROR_STATUS_CODE, 500);
+            request.setAttribute(RequestDispatcher.ERROR_MESSAGE, "internal SQL detail");
+            return request;
+        })).andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.status").value(500))
+                .andExpect(jsonPath("$.message").doesNotExist())
+                .andExpect(header().doesNotExist("Location"));
+        mvc.perform(get("/error")).andExpect(status().is3xxRedirection());
     }
 }

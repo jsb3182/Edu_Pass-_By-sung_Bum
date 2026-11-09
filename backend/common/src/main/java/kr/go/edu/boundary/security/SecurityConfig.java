@@ -1,6 +1,7 @@
 package kr.go.edu.boundary.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -49,6 +50,8 @@ public class SecurityConfig {
         var loginEntryPoint = new LoginUrlAuthenticationEntryPoint("/master/login.html");
         return http
                 .authorizeHttpRequests(authorize -> authorize
+                        // 컨테이너의 오류 전달은 원래 상태를 유지하도록 허용합니다.
+                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers("/master/login.html", "/user/**", "/shared/assets/**",
                                 "/master/js/**", "/master/assets/**",
                                 "/login.html", "/sign.html",
