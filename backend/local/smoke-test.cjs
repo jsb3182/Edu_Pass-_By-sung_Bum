@@ -1,8 +1,11 @@
-// Node.js 20+ 필요. 실행 중인 로컬 서버에 검증용 신청 내역 1건을 저장합니다.
+// Node.js 20+ 필요. 실행 중인 로컬 서버에 검증용 신청 내역과 가짜 서명을 각각 1건 저장합니다.
 const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
-const { randomUUID } = require('node:crypto');
+const { createHash, randomUUID } = require('node:crypto');
+
+// 160×80 흰 배경에 검은 곡선을 그린 테스트 PNG입니다.
+const testSignature = 'iVBORw0KGgoAAAANSUhEUgAAAKAAAABQCAAAAAC7NiHoAAABI0lEQVR4nO2YQQ7CMAwE8/9PwwGpB3AS27OBSuzcqsS7o1ZVA+Nxc8avBXZYkGJBigUpFqRYkGJBigUpFqRYkGJBigUpFqSoBMeFKPAKloS8oci8snlChMTtFU/nZ4j8qODUT6aIYkIbsSIImYsoDfsZSwmdYjthJ6AybAZk6jWKvfFktcKwM53vFRg2hkutWLE+WqykhtXJRh8zLA627ge6ibWxZhMxrEyBnsKLv7mWlPSHP7d8723Mfnt6gorP1jYjXE5Vis4m65jJ4sf10dPdNGrMV8KdwaDofBzlLTtiwQCF3rJg0pEUVOktFePdmWmlXrUkeuqH9Wodp3/zLMiV/M2/W8ewIMWCFAtSLEixIMWCFAtSLEixIMWCFAtSbi/4BGUsSUxRP1TMAAAAAElFTkSuQmCC';
 
 function readConfig() {
   const config = {};
@@ -118,8 +121,9 @@ async function main() {
   assert.equal(updated.status, '심사');
   assert.equal((await changeStatus('덮어쓰기')).status, 409);
   assert.equal((await json(await admin(`/api/admin/tasks/${task.id}`))).status, '심사');
+  const signerName = ('테스트 방문자 ' + '가'.repeat(200)).slice(0, 200);
   const issued = await json(await admin('/api/admin/signing-sessions', post({
-    taskId: task.id, signerName: '테스트 방문자', affiliation: '개발 테스트', purpose: 'OTHER'
+    taskId: task.id, signerName, affiliation: '개발 테스트', purpose: 'OTHER'
   }, csrf)));
   const url = new URL(issued.url);
   assert.equal(url.pathname, '/user/index.html');
@@ -128,13 +132,50 @@ async function main() {
   assert.ok(token);
   const visitorCsrf = await json(await visitor('/api/csrf'));
   const details = await json(await visitor('/api/public/signing-sessions/lookup', post({ token }, visitorCsrf)));
-  assert.equal(details.signerName, '테스트 방문자');
+  assert.equal(details.signerName, signerName);
   assert.equal(details.applicationNo, task.applicationNo);
+
+  const data = {
+    token, pngBase64: testSignature, consent: true, locationConsent: false, locationStatus: 'NOT_REQUESTED',
+    locationCapturedAt: '2026-01-01T00:00:00Z', latitude: 37.1, longitude: 127.0, accuracyM: 10
+  };
+  const submit = overrides => visitor('/api/public/signatures', post({ ...data, ...overrides }, visitorCsrf));
+  const signaturesRoute = `/api/admin/tasks/${task.id}/signatures`;
+  await expectError(await submit({ pngBase64: 'invalid-png' }), 400);
+  await expectError(await submit({ locationStatus: 'AVAILABLE' }), 400);
+  assert.deepEqual(await json(await admin(signaturesRoute)), []);
+  assert.equal((await json(await visitor('/api/public/signing-sessions/lookup', post({ token }, visitorCsrf))))
+    .applicationNo, task.applicationNo, '저장 실패 후에도 같은 링크로 다시 시도할 수 있어야 합니다.');
+
+  const attempts = await Promise.all([submit({}), submit({})]);
+  assert.deepEqual(attempts.map(response => response.status).sort(), [200, 409]);
+  const receipt = await json(attempts.find(response => response.ok));
+  await expectError(attempts.find(response => !response.ok), 409);
+  await expectError(await visitor('/api/public/signing-sessions/lookup', post({ token }, visitorCsrf)), 409);
+  const [stored, ...duplicates] = await json(await admin(signaturesRoute));
+  assert.deepEqual(duplicates, []);
+  assert.equal(stored.id, receipt.signatureId);
+  assert.equal(stored.signerName, signerName);
+  assert.equal(stored.locationStatus, 'NOT_REQUESTED');
+  assert.equal(stored.latitude, null);
+  assert.equal(stored.longitude, null);
+  assert.equal(stored.accuracyM, null);
+  const image = await admin(`/api/admin/signatures/${receipt.signatureId}/image`);
+  assert.equal(image.status, 200);
+  assert.equal(image.headers.get('content-type'), 'image/png');
+  const png = Buffer.from(testSignature, 'base64');
+  assert.deepEqual(Buffer.from(await image.arrayBuffer()), png);
+  assert.equal(receipt.imageSha256, createHash('sha256').update(png).digest('hex'));
+  const audit = await json(await admin('/api/admin/audit'));
+  assert.equal(audit.find(event => event.entityId === receipt.signatureId && event.action === 'SIGNATURE_SUBMITTED')
+    ?.actor, signerName);
+
   console.log(JSON.stringify({
-    result: 'PASS', baseUrl: base, taskId: task.id,
+    result: 'PASS', baseUrl: base, taskId: task.id, signatureId: receipt.signatureId,
     checked: ['DB health', '관리자 로그인', 'JSON 인증·CSRF·입력 오류', '업로드 누락·용량 초과',
       '비밀번호 바이트 제한', '내역 저장·검색·조회',
-      '입력 검증 및 중복 차단', '상태 변경 및 동시 수정 충돌', '서명 링크 발급·방문자 조회']
+      '입력 검증 및 중복 차단', '상태 변경 및 동시 수정 충돌',
+      '서명 링크 발급·저장 실패 후 재시도·동시 제출 차단', '서명 이미지·감사 기록 조회']
   }, null, 2));
 }
 

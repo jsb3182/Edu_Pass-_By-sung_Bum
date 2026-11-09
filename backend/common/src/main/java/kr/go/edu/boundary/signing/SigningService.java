@@ -133,7 +133,7 @@ public class SigningService {
                 id, session.id(), task.id(), session.signerName(), session.affiliation(),
                 session.purpose(), png, imageHash, snapshotHash, snapshotJson,
                 CONSENT_TEXT, LOCATION_CONSENT_TEXT,
-                optional(request.deviceLabel(), 120), request.clientSignedAt(), request.locationCapturedAt(),
+                optional(request.deviceLabel(), 120), request.clientSignedAt(), location.capturedAt(),
                 location.latitude(), location.longitude(), location.accuracyM(),
                 request.locationConsent(), location.status());
         audit.record(session.signerName(), "SIGNATURE_SUBMITTED", "SIGNATURE", id,
@@ -252,9 +252,10 @@ public class SigningService {
                     || Math.abs(request.longitude()) > 180 || request.accuracyM() <= 0) {
                 throw new IllegalArgumentException("위치 좌표 또는 정확도가 올바르지 않습니다.");
             }
-            return new Location(status.name(), request.latitude(), request.longitude(), request.accuracyM());
+            return new Location(status.name(), request.latitude(), request.longitude(), request.accuracyM(),
+                    request.locationCapturedAt());
         }
-        return new Location(status.name(), null, null, null);
+        return new Location(status.name(), null, null, null, null);
     }
 
     private static String required(String value, String label, int maxLength) {
@@ -304,7 +305,8 @@ public class SigningService {
             String purpose, long taskVersion, OffsetDateTime expiresAt) { }
     private record TaskSnapshot(UUID taskId, String applicationNo, String applicantName,
             String schoolName, String status, long version) { }
-    private record Location(String status, Double latitude, Double longitude, Double accuracyM) { }
+    private record Location(String status, Double latitude, Double longitude, Double accuracyM,
+            OffsetDateTime capturedAt) { }
     private record SignatureSyncPayload(UUID signatureId, UUID taskId, UUID sessionId,
             String signerName, String affiliation, String purpose, String imageSha256,
             String taskSnapshotSha256, String taskSnapshot, String consentText,
