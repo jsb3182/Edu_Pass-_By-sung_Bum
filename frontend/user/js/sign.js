@@ -59,14 +59,14 @@ async function post(path, data) {
 // 캔버스를 화면 크기에 맞추고 흰 배경으로 초기화합니다.
 function clearSignature() {
   const box = canvas.getBoundingClientRect();
-  const scale = window.devicePixelRatio || 1;
+  // 고해상도 화면에서도 서버가 받는 PNG 크기를 넘지 않도록 합니다.
+  const scale = Math.min(window.devicePixelRatio || 1, 2);
   canvas.width = Math.round(box.width * scale);
   canvas.height = Math.round(box.height * scale);
-  pen.setTransform(scale, 0, 0, scale, 0, 0);
   pen.fillStyle = '#ffffff';
-  pen.fillRect(0, 0, box.width, box.height);
+  pen.fillRect(0, 0, canvas.width, canvas.height);
   pen.strokeStyle = '#182b45';
-  pen.lineWidth = 2.8;
+  pen.lineWidth = 2.8 * scale;
   pen.lineCap = 'round';
   pen.lineJoin = 'round';
   hasSignature = false;
@@ -76,7 +76,11 @@ function clearSignature() {
 
 function pointerPoint(event) {
   const box = canvas.getBoundingClientRect();
-  return { x: event.clientX - box.left, y: event.clientY - box.top };
+  // 화면 회전 후에도 현재 표시 크기에서 실제 캔버스 좌표로 변환합니다.
+  return {
+    x: (event.clientX - box.left) * canvas.width / box.width,
+    y: (event.clientY - box.top) * canvas.height / box.height
+  };
 }
 
 function startDrawing(event) {

@@ -29,7 +29,7 @@ BoundaryRecordsApplication을 각각 다른 프로필로 실행합니다. DB와 
 
 ~~~powershell
 mvn clean package
-node --test frontend/user/tests/sign-location.test.js
+node --test frontend/user/tests/sign-location.test.js frontend/user/tests/sign-canvas.test.js
 ~~~
 
 Maven이 PATH에 없다면 설치된 Maven의 mvn.cmd 전체 경로로 실행하세요.
