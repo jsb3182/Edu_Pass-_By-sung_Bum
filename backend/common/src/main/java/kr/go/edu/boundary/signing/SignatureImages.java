@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.Base64;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.MemoryCacheImageInputStream;
 
 final class SignatureImages {
     private static final byte[] PNG_HEADER = {(byte) 137, 80, 78, 71, 13, 10, 26, 10};
@@ -31,11 +33,7 @@ final class SignatureImages {
             }
         }
         try {
-            BufferedImage decoded = ImageIO.read(new ByteArrayInputStream(image));
-            if (decoded == null || decoded.getWidth() < 100 || decoded.getHeight() < 50
-                    || (long) decoded.getWidth() * decoded.getHeight() > 2_000_000) {
-                throw new IllegalArgumentException("서명 이미지 해상도가 올바르지 않습니다.");
-            }
+            BufferedImage decoded = decodePng(image);
             int inkPixels = 0;
             for (int y = 0; y < decoded.getHeight(); y += 2) {
                 for (int x = 0; x < decoded.getWidth(); x += 2) {
@@ -52,6 +50,22 @@ final class SignatureImages {
             throw new IllegalArgumentException("비어 있는 서명은 저장할 수 없습니다.");
         } catch (IOException exception) {
             throw new IllegalArgumentException("서명 이미지를 읽을 수 없습니다.");
+        }
+    }
+
+    private static BufferedImage decodePng(byte[] image) throws IOException {
+        ImageReader reader = ImageIO.getImageReadersByFormatName("png").next();
+        try (var input = new MemoryCacheImageInputStream(new ByteArrayInputStream(image))) {
+            reader.setInput(input, true, true);
+            int width = reader.getWidth(0);
+            int height = reader.getHeight(0);
+            // 압축된 PNG가 작아도 큰 픽셀 배열을 만들기 전에 거절합니다.
+            if (width < 100 || height < 50 || (long) width * height > 2_000_000) {
+                throw new IllegalArgumentException("서명 이미지 해상도가 올바르지 않습니다.");
+            }
+            return reader.read(0);
+        } finally {
+            reader.dispose();
         }
     }
 }
