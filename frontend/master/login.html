@@ -11,36 +11,32 @@
 </head>
 <body class="sign-body">
   <a class="krds-skip-link" href="#mainContent">본문으로 바로가기</a>
-  <main class="login-shell" id="mainContent">
-    <header class="sign-header">
-      <span class="brand-mark">✓</span>
-      <div>
-        <strong>방문 기록</strong>
-        <small>EDUCATION OFFICE</small>
+  <header class="service-header">
+    <div class="service-inner service-masthead">
+      <div class="service-brand">
+        <img src="/shared/assets/icons/service-mark.svg" width="44" height="44" alt="">
+        <div><strong>방문 기록 시스템</strong><small>관리자 업무 화면</small></div>
       </div>
-    </header>
-    <div class="krds-identity" role="note">
-      <span class="krds-identity-mark" aria-hidden="true">i</span>
-      관리자 계정으로만 이용할 수 있는 업무 화면입니다.
     </div>
+  </header>
+
+  <main class="login-shell" id="mainContent" tabindex="-1">
     <nav class="krds-breadcrumb" aria-label="현재 위치">
-      <span>방문 기록</span><span class="separator" aria-hidden="true">›</span>
-      <strong aria-current="page">관리자 로그인</strong>
+      <span>방문 기록</span><span aria-hidden="true">›</span>
+      <span aria-current="page">관리자 로그인</span>
     </nav>
 
     <section class="card sign-card">
-      <div class="login-emblem" aria-hidden="true">✓</div>
-      <span class="eyebrow">ADMIN ACCESS</span>
       <h1>관리자 로그인</h1>
-      <p class="muted">기관에서 발급한 계정으로 로그인하세요.</p>
+      <p class="muted">등록된 관리자 또는 운영자 계정으로 로그인하세요.</p>
       <p class="krds-field-hint"><span class="krds-required">*</span> 표시는 필수 입력 항목입니다.</p>
       <div id="loginMessage" class="alert message error" role="alert" hidden></div>
       <form class="login-form" action="/login" method="post">
         <input id="loginCsrf" type="hidden" name="_csrf">
-        <label>계정명
-          <input name="username" autocomplete="username" required autofocus class="form-control">
+        <label><span>계정명 <span class="krds-required" aria-hidden="true">*</span></span>
+          <input name="username" autocomplete="username" required class="form-control">
         </label>
-        <label>비밀번호
+        <label><span>비밀번호 <span class="krds-required" aria-hidden="true">*</span></span>
           <input name="password" type="password" autocomplete="current-password" required class="form-control">
         </label>
         <button id="loginButton" class="btn btn-primary primary-btn wide" type="submit" disabled>로그인 준비 중…</button>

@@ -12,25 +12,24 @@
 </head>
 <body class="sign-body">
   <a class="krds-skip-link" href="#mainContent">본문으로 바로가기</a>
-  <main class="login-shell" id="mainContent">
-    <div class="preview-banner">화면 미리보기 · 로그인 정보는 전송되지 않습니다. <a href="admin.html">관리자 화면 보기 →</a></div>
-    <header class="sign-header">
-      <span class="brand-mark">✓</span>
-      <div><strong>방문 기록</strong><small>EDUCATION OFFICE</small></div>
-    </header>
-    <div class="krds-identity" role="note">
-      <span class="krds-identity-mark" aria-hidden="true">i</span>
-      관리자 계정으로만 이용할 수 있는 업무 화면입니다.
+  <header class="service-header">
+    <div class="service-inner service-masthead">
+      <div class="service-brand">
+        <img src="../frontend/shared/assets/icons/service-mark.svg" width="44" height="44" alt="">
+        <div><strong>방문 기록 시스템</strong><small>관리자 업무 화면</small></div>
+      </div>
     </div>
+  </header>
+
+  <main class="login-shell" id="mainContent" tabindex="-1">
+    <div class="preview-banner">화면 미리보기 · 로그인 정보는 전송되지 않습니다. <a href="admin.html">관리자 화면 보기 →</a></div>
     <nav class="krds-breadcrumb" aria-label="현재 위치">
-      <span>방문 기록</span><span class="separator" aria-hidden="true">›</span>
-      <strong aria-current="page">관리자 로그인</strong>
+      <span>방문 기록</span><span aria-hidden="true">›</span>
+      <span aria-current="page">관리자 로그인</span>
     </nav>
     <section class="card sign-card">
-      <div class="login-emblem" aria-hidden="true">✓</div>
-      <span class="eyebrow">ADMIN ACCESS</span>
       <h1>관리자 로그인</h1>
-      <p class="muted">기관에서 발급한 계정으로 로그인하세요.</p>
+      <p class="muted">등록된 관리자 또는 운영자 계정으로 로그인하세요.</p>
       <div class="login-form">
         <label>계정명<input placeholder="계정명 예시" readonly class="form-control"></label>
         <label>비밀번호<input type="password" placeholder="비밀번호 예시" readonly class="form-control"></label>

@@ -11,33 +11,32 @@
 </head>
 <body class="sign-body">
   <a class="krds-skip-link" href="#mainContent">본문으로 바로가기</a>
-  <main class="sign-shell" id="mainContent">
-    <header class="sign-header">
-      <span class="brand-mark">✓</span>
-      <div>
-        <strong>현장 방문 확인</strong>
-        <small>VISITOR SIGNATURE</small>
+  <header class="service-header">
+    <div class="service-inner service-masthead">
+      <div class="service-brand">
+        <img src="/shared/assets/icons/service-mark.svg" width="44" height="44" alt="">
+        <div><strong>방문 기록 시스템</strong><small>방문 확인 서비스</small></div>
       </div>
-    </header>
-    <div class="krds-identity" role="note">
-      <span class="krds-identity-mark" aria-hidden="true">i</span>
-      방문 내역을 확인한 뒤 본인이 직접 서명해 주세요.
     </div>
+  </header>
+
+  <main class="sign-shell" id="mainContent" tabindex="-1">
     <nav class="krds-breadcrumb" aria-label="현재 위치">
-      <span>방문 기록</span><span class="separator" aria-hidden="true">›</span>
-      <strong aria-current="page">현장 방문 확인</strong>
+      <span>방문 기록</span><span aria-hidden="true">›</span>
+      <span aria-current="page">방문자 서명</span>
     </nav>
 
     <div id="signError" class="alert message error" role="alert" hidden></div>
 
     <section id="signPanel" class="card sign-card" hidden>
+      <h1>방문자 서명</h1>
+      <p class="muted">방문 내역을 확인한 뒤 직접 서명해 주세요.</p>
       <ol class="sign-steps" aria-label="서명 절차">
-        <li class="active" aria-current="step">01 내역 확인</li>
-        <li>02 직접 서명</li>
-        <li>03 저장 완료</li>
+        <li class="active" aria-current="step"><span class="step-number" aria-hidden="true">1</span>내역 확인</li>
+        <li><span class="step-number" aria-hidden="true">2</span>직접 서명</li>
+        <li><span class="step-number" aria-hidden="true">3</span>저장 완료</li>
       </ol>
-      <span class="eyebrow">RECORD CONFIRMATION</span>
-      <h1>방문 내역을 확인하고 서명해 주세요</h1>
+      <h2>방문 내역</h2>
 
       <dl class="record-summary">
         <div><dt>신청번호</dt><dd id="signApplication"></dd></div>
@@ -51,7 +50,7 @@
 
       <div class="sign-pad-heading">
         <h2>직접 서명</h2>
-        <button id="clearSignature" class="btn btn-light ghost-btn" type="button">다시 쓰기</button>
+        <button id="clearSignature" class="btn btn-light ghost-btn" type="button">서명 지우기</button>
       </div>
       <div class="canvas-frame">
         <canvas id="signatureCanvas" aria-label="손가락이나 펜으로 서명하는 영역"></canvas>
@@ -80,9 +79,11 @@
     </section>
 
     <section id="successPanel" class="card sign-card success-card" hidden>
-      <div class="success-mark">✓</div>
-      <h1>서명이 저장되었습니다</h1>
+      <div class="success-mark" aria-hidden="true">✓</div>
+      <p class="eyebrow">3단계 · 저장 완료</p>
+      <h1 id="successTitle" tabindex="-1">서명이 저장되었습니다</h1>
       <p>담당자에게 완료 화면을 보여주세요.</p>
+      <strong>서명 확인 번호</strong>
       <code id="receiptId"></code>
     </section>
   </main>

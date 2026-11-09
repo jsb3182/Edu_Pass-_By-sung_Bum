@@ -1,4 +1,4 @@
-// This file is used only by the two local preview pages.
+// This file is used only by the local preview pages.
 // It contains no API calls, location requests, or data storage.
 
 const viewNames = {
@@ -10,17 +10,21 @@ const viewNames = {
   password: '내 비밀번호'
 };
 
-for (const button of document.querySelectorAll('[data-view]')) {
+for (const button of document.querySelectorAll('[data-view], [data-open-view]')) {
   button.addEventListener('click', () => {
-    const selected = button.dataset.view;
+    const selected = button.dataset.view || button.dataset.openView;
     for (const section of document.querySelectorAll('.view')) {
       section.hidden = section.id !== `${selected}View`;
     }
     for (const menuItem of document.querySelectorAll('[data-view]')) {
-      menuItem.classList.toggle('active', menuItem === button);
+      const current = menuItem.dataset.view === selected;
+      menuItem.classList.toggle('active', current);
+      if (current) menuItem.setAttribute('aria-current', 'page');
+      else menuItem.removeAttribute('aria-current');
     }
     document.getElementById('viewTitle').textContent = viewNames[selected];
     document.getElementById('breadcrumbCurrent').textContent = viewNames[selected];
+    document.getElementById('viewTitle').focus();
   });
 }
 
@@ -58,6 +62,7 @@ if (canvas) {
     for (const [position, item] of [...document.querySelectorAll('.sign-steps li')].entries()) {
       const active = position === index;
       item.classList.toggle('active', active);
+      item.classList.toggle('done', position < index);
       if (active) item.setAttribute('aria-current', 'step');
       else item.removeAttribute('aria-current');
     }

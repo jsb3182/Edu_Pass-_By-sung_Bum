@@ -32,6 +32,7 @@ function showStep(index) {
   for (const [position, item] of [...document.querySelectorAll('.sign-steps li')].entries()) {
     const active = position === index;
     item.classList.toggle('active', active);
+    item.classList.toggle('done', position < index);
     if (active) item.setAttribute('aria-current', 'step');
     else item.removeAttribute('aria-current');
   }
@@ -206,6 +207,7 @@ async function submitSignature() {
     element('signPanel').hidden = true;
     element('receiptId').textContent = result.signatureId;
     element('successPanel').hidden = false;
+    element('successTitle').focus();
     signingToken = null;
   } catch (error) {
     showError(error.message);

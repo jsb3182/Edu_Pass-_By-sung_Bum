@@ -1,15 +1,17 @@
-# 공공서비스 디자인 적용 범위
+# KRDS 화면 적용 범위
 
-현재 화면은 Bootstrap 4.5 위에 **KRDS 지향 로컬 테마**를 얹은 시안입니다. 회사 PC에서 외부 네트워크를 사용하지 않았고 KRDS 공식 CSS·컴포넌트 패키지가 로컬에 없어, 공식 배포본을 설치했거나 적합성 검증을 마쳤다는 뜻은 아닙니다.
+방문 기록 시스템은 KRDS의 밝은 모드 팔레트와 서체를 사용합니다. 프로젝트의 Bootstrap 기반 화면에 적용할 토큰은 `frontend/shared/assets/css/krds-theme.css`, 업무별 배치는 `frontend/shared/assets/css/app.css`에 있습니다.
 
-## 적용한 요소
+| 적용 요소 | 화면에서 확인할 부분 |
+| --- | --- |
+| 색상과 서체 | 밝은 회색 바탕, 남색 서비스 헤더, 파란색 주요 버튼, Pretendard GOV 본문 |
+| 탐색 | 상단 업무 메뉴, 현재 메뉴 밑줄과 `aria-current`, 본문 바로가기, 현재 위치 |
+| 입력과 표 | 48px 기본 조작 높이, 필수 입력 표시, 표의 열 제목, 좁은 화면에서 표 안쪽 가로 스크롤 |
+| 서명 | 순서가 있는 단계 표시, 선택 위치 동의, 저장 완료와 확인 번호 |
+| 초점 | 입력 요소의 키보드 초점 표시, 화면 전환 시 페이지 제목과 완료 제목에 초점 이동 |
 
-- `krds-theme.css`에 기본 색상·글자·테두리·초점 표시 토큰을 모았습니다.
-- 모든 화면에 키보드용 **본문으로 바로가기** 링크와 현재 위치 안내를 넣었습니다.
-- 관리자 표의 신청번호를 실제 버튼으로 바꿔 키보드로 상세 화면을 열 수 있습니다.
-- 표 제목, 필수 입력 표시, 오류 메시지, 서명 절차의 의미를 화면 요소에 명시했습니다.
-- 파란색·흰색 중심의 카드와 넓은 터치 영역은 기존 요청을 유지했습니다.
+공통 헤더에는 방문 기록 시스템 자체 표식을 사용합니다. 웹폰트는 Pretendard GOV 1.3.9를 포함하며, 외부 CDN 호출 없이 서비스합니다. 글꼴의 SIL Open Font License 1.1은 `frontend/shared/assets/fonts/OFL.txt`에 있습니다.
 
-## 공식 적용 전에 확인할 것
+색상 토큰은 행정안전부의 범정부 UI/UX 디자인시스템 HTML Component Kit 1.0.3에서 가져왔습니다. KRDS는 공공누리 제1유형에 따라 제공됩니다. [KRDS 개발자 가이드](https://www.krds.go.kr/html/site/outline/outline_03.html) · [KRDS 저작권](https://www.krds.go.kr/html/site/utility/utility_06.html)
 
-기관이 사용하는 KRDS 버전과 공식 배포 파일을 승인된 경로로 확보한 뒤, 이 로컬 토큰과 구성요소를 대조해야 합니다. 정부 상징·기관 로고는 승인된 원본이 제공될 때만 넣고, 접근성 검사와 실제 태블릿 검수를 진행해야 합니다.
+서체와 컴포넌트는 다음 지침을 참고했습니다. [타이포그래피](https://www.krds.go.kr/html/site/style/style_03.html) · [헤더](https://www.krds.go.kr/html/site/component/component_02_03.html) · [표](https://www.krds.go.kr/html/site/component/component_04_11.html) · [단계 표시기](https://www.krds.go.kr/html/site/component/component_07_01.html) · [Pretendard GOV 배포본](https://github.com/orioncactus/pretendard/releases/tag/v1.3.9)

@@ -98,10 +98,14 @@ async function showView(name) {
     section.hidden = section.id !== `${name}View`;
   }
   for (const button of document.querySelectorAll('.nav-item')) {
-    button.classList.toggle('active', button.dataset.view === name);
+    const current = button.dataset.view === name;
+    button.classList.toggle('active', current);
+    if (current) button.setAttribute('aria-current', 'page');
+    else button.removeAttribute('aria-current');
   }
   element('viewTitle').textContent = titles[name];
   element('breadcrumbCurrent').textContent = titles[name];
+  element('viewTitle').focus();
 
   if (name === 'overview') await loadSummary();
   if (name === 'tasks') await loadTasks();
@@ -270,6 +274,7 @@ async function createTask(event) {
   const task = await api('/api/admin/tasks', 'POST', formValues(event.target));
   event.target.reset();
   element('newTaskPanel').hidden = true;
+  element('newTaskButton').setAttribute('aria-expanded', 'false');
   await loadTasks();
   await selectTask(task);
   showMessage('신청 내역을 등록했습니다.');
@@ -340,12 +345,14 @@ async function changePassword(event) {
 }
 
 function bindEvents() {
-  for (const button of document.querySelectorAll('.nav-item')) {
-    button.addEventListener('click', () => safely(() => showView(button.dataset.view)));
+  for (const button of document.querySelectorAll('.nav-item, [data-open-view]')) {
+    button.addEventListener('click', () => safely(() => showView(button.dataset.view || button.dataset.openView)));
   }
 
   element('newTaskButton').addEventListener('click', () => {
-    element('newTaskPanel').hidden = !element('newTaskPanel').hidden;
+    const panel = element('newTaskPanel');
+    panel.hidden = !panel.hidden;
+    element('newTaskButton').setAttribute('aria-expanded', String(!panel.hidden));
   });
   element('searchButton').addEventListener('click', () => {
     currentPage = 0;
