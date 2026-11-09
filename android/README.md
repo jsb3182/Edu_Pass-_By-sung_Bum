@@ -21,6 +21,17 @@ cd android
 
 로컬 APK는 `app/build/outputs/apk/local/debug/app-local-debug.apk`, 원격 APK는 `app/build/outputs/apk/remote/debug/app-remote-debug.apk`에 생성됩니다. 테스트 빌드는 디버그 키로 서명합니다. 기관 배포용 빌드는 기관에서 관리하는 키로 서명해 배포합니다.
 
+## 가상 기기에서 서명 저장 검증
+
+1. 개발 서버에서 테스트 전용 행사를 만들고 행사 링크를 복사합니다. Android Studio 에뮬레이터에서 같은 노트북의 서버에 연결하려면 서버의 `APP_PUBLIC_BASE_URL`을 `http://10.0.2.2:8080`처럼 설정한 뒤 링크를 발급합니다. 포트는 실행 중인 서버에 맞춥니다.
+2. 가상 기기를 한 대 실행한 상태에서 `android` 폴더에서 아래 명령을 실행합니다. 원격 버전은 가상 기기가 신뢰하는 인증서의 HTTPS 행사 링크를 사용하고 `connectedRemoteDebugAndroidTest`로 바꿉니다.
+
+~~~powershell
+.\gradlew.bat connectedLocalDebugAndroidTest "-Pandroid.testInstrumentationRunnerArguments.attendanceLink=발급받은_가상_행사_링크"
+~~~
+
+테스트는 가상 방문자 정보를 입력하고 터치로 서명해 실제 출석 한 건을 등록합니다. 저장 확인과 다음 방문자 양식 초기화를 검사합니다. 관리자 화면의 해당 행사에서 등록된 명단과 엑셀을 확인할 수 있습니다.
+
 ## 노트북에서 행사 운영
 
 1. `test` 브랜치를 받아 프로젝트 루트의 로컬 실행 스크립트로 서버를 실행합니다. 네트워크 설정은 [로컬 실행 안내](../backend/local/README.md)를 참고합니다.
