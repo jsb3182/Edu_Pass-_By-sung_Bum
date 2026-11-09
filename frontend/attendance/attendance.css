@@ -1,0 +1,14 @@
+.attendance-fieldset { padding: 0; margin: 0; border: 0; min-width: 0; }
+.attendance-fieldset legend { margin-bottom: 12px; font-size: 1.5rem; font-weight: 700; }
+.attendance-fieldset .form-grid { margin-bottom: 24px; }
+.attendance-canvas { height: clamp(160px, 34vw, 240px); }
+.attendance-receipt code { display: block; margin-bottom: 24px; overflow-wrap: anywhere; }
+.attendance-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.attendance-invite { display: grid; gap: 6px; margin-block: 16px; }
+.attendance-events { display: grid; gap: 8px; padding: 0; margin: 0; list-style: none; }
+.attendance-events button { text-align: left; justify-content: flex-start; overflow-wrap: anywhere; max-width: 100%; }
+.attendance-events [aria-pressed="true"] { border-color: var(--krds-primary); background: var(--krds-primary-tint); }
+.attendance-table { margin-top: 16px; }
+.attendance-table table { min-width: 720px; }
+.attendance-thumbnail { width: 100px; height: 44px; object-fit: contain; }
+.service-nav a.nav-item { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }

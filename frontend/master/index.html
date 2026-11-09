@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="/shared/assets/vendor/bootstrap.min.css">
   <link rel="stylesheet" href="/shared/assets/css/krds-theme.css">
   <link rel="stylesheet" href="/shared/assets/css/app.css">
+  <link rel="stylesheet" href="/attendance/attendance.css">
   <script src="/master/js/admin.js" defer></script>
 </head>
 <body class="admin-body">
@@ -30,6 +31,7 @@
       <div class="service-inner">
         <button type="button" class="nav-item active" data-view="overview" aria-current="page">대시보드</button>
         <button type="button" class="nav-item" data-view="tasks">신청 내역·서명</button>
+        <a class="nav-item" id="attendanceNav" href="/master/attendance.html" hidden>행사 출석부</a>
         <button type="button" class="nav-item" data-view="imports">엑셀 적재</button>
         <button type="button" class="nav-item" data-view="users" id="usersNav">계정 관리</button>
         <button type="button" class="nav-item" data-view="audit">감사 기록</button>

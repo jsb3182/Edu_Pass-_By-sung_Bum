@@ -97,7 +97,7 @@ async function showView(name) {
   for (const section of document.querySelectorAll('.view')) {
     section.hidden = section.id !== `${name}View`;
   }
-  for (const button of document.querySelectorAll('.nav-item')) {
+  for (const button of document.querySelectorAll('.nav-item[data-view]')) {
     const current = button.dataset.view === name;
     button.classList.toggle('active', current);
     if (current) button.setAttribute('aria-current', 'page');
@@ -345,7 +345,7 @@ async function changePassword(event) {
 }
 
 function bindEvents() {
-  for (const button of document.querySelectorAll('.nav-item, [data-open-view]')) {
+  for (const button of document.querySelectorAll('.nav-item[data-view], [data-open-view]')) {
     button.addEventListener('click', () => safely(() => showView(button.dataset.view || button.dataset.openView)));
   }
 
@@ -399,6 +399,7 @@ async function start() {
       ? 'AWS 원격 서버에 연결되어 있습니다. 이 서버의 데이터베이스에 기록됩니다.'
       : '노트북 로컬 서버에 연결되어 있습니다. 이 서버의 데이터베이스에 기록됩니다.';
 
+    element('attendanceNav').hidden = loginUser.role !== 'ROLE_ADMIN';
     if (loginUser.role !== 'ROLE_ADMIN') {
       element('usersNav').hidden = true;
       document.querySelector('[data-view="imports"]').hidden = true;
