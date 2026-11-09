@@ -16,6 +16,7 @@ createApp({
     const date = ref(new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' }));
     const error = ref('');
     const busy = ref(false);
+    const confirmation = ref('');
 
     async function action(task) {
       if (busy.value) return;
@@ -37,6 +38,7 @@ createApp({
     function select(id) {
       return action(async () => {
         invite.value = '';
+        confirmation.value = '';
         await refresh(id);
       });
     }
@@ -53,7 +55,7 @@ createApp({
 
     function renew() {
       return action(async () => {
-        if (!window.confirm('이전 링크를 닫고 새 출석 링크를 발급할까요?')) return;
+        confirmation.value = '';
         const result = await api(route + '/' + active.value.id + '/renew', {});
         invite.value = result.url;
       });
@@ -61,7 +63,7 @@ createApp({
 
     function close() {
       return action(async () => {
-        if (!window.confirm('이 행사의 출석 접수를 마감할까요?')) return;
+        confirmation.value = '';
         const id = active.value.id;
         await api(route + '/' + id + '/close', {});
         invite.value = '';
@@ -86,9 +88,19 @@ createApp({
         ]),
         h('p', { class: 'muted' }, active.value.eventDate + ' · ' + (active.value.closedAt ? '마감' : '접수 중')),
         active.value.closedAt ? null : h('div', { class: 'attendance-actions' }, [
-          h('button', { type: 'button', class: 'btn btn-outline-primary', disabled: busy.value, onClick: renew }, '링크 다시 발급'),
-          h('button', { type: 'button', class: 'btn btn-light', disabled: busy.value, onClick: close }, '접수 마감')
+          h('button', { type: 'button', class: 'btn btn-outline-primary', disabled: busy.value, onClick: () => { confirmation.value = 'renew'; } }, '링크 다시 발급'),
+          h('button', { type: 'button', class: 'btn btn-light', disabled: busy.value,
+            onClick: () => { confirmation.value = 'close'; } }, '접수 마감')
         ]),
+        confirmation.value ? h('div', { class: 'location-card', role: 'group', 'aria-label': '행사 관리 확인' }, [
+          h('p', confirmation.value === 'close' ? '마감하면 새 출석을 받을 수 없습니다.'
+            : '이전 링크를 닫고 새 출석 링크를 발급합니다.'),
+          h('div', { class: 'attendance-actions' }, [
+            h('button', { type: 'button', class: 'btn btn-primary', onClick: confirmation.value === 'close' ? close : renew },
+              confirmation.value === 'close' ? '마감하기' : '새 링크 발급'),
+            h('button', { type: 'button', class: 'btn btn-light', onClick: () => { confirmation.value = ''; } }, '취소')
+          ])
+        ]) : null,
         invite.value ? h('label', { class: 'attendance-invite' }, [
           '방문자에게 공유할 행사 링크',
           h('input', { class: 'form-control', readonly: true, value: invite.value,
