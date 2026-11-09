@@ -25,7 +25,8 @@ public class ActiveAccountFilter extends OncePerRequestFilter {
             FilterChain chain) throws ServletException, IOException {
         String path = request.getRequestURI();
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if ((path.equals("/admin.html") || path.equals("/master/index.html") || path.equals("/master/") || path.startsWith("/api/admin/"))
+        if ((path.equals("/admin.html") || path.equals("/master/index.html") || path.equals("/master/")
+                || path.equals("/master/attendance.html") || path.startsWith("/api/admin/"))
                 && authentication != null && authentication.isAuthenticated()
                 && !"anonymousUser".equals(authentication.getPrincipal())) {
             Long active = jdbc.queryForObject("SELECT count(*) FROM users WHERE username = ? AND active = true",

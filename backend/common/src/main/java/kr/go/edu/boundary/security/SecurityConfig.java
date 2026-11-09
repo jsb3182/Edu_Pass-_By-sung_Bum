@@ -52,7 +52,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         // 컨테이너의 오류 전달은 원래 상태를 유지하도록 허용합니다.
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
-                        .requestMatchers("/master/login.html", "/user/**", "/shared/assets/**",
+                        .requestMatchers("/master/login.html", "/user/**", "/attendance/**", "/shared/assets/**",
                                 "/master/js/**", "/master/assets/**",
                                 "/login.html", "/sign.html",
                                 "/favicon.ico",
@@ -60,7 +60,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/public/**").permitAll()
                         // 메뉴 숨김과 별개로 서버에서도 관리자 전용 API를 제한합니다.
                         .requestMatchers("/api/admin/users", "/api/admin/users/**",
-                                "/api/admin/imports", "/api/admin/imports/**").hasRole("ADMIN")
+                                "/api/admin/imports", "/api/admin/imports/**",
+                                "/master/attendance.html", "/api/admin/attendance/**").hasRole("ADMIN")
                         .requestMatchers("/admin.html", "/master/", "/master/index.html", "/api/admin/**").hasAnyRole("ADMIN", "OPERATOR")
                         .requestMatchers(HttpMethod.GET, "/", "/index.html").permitAll()
                         .anyRequest().denyAll())

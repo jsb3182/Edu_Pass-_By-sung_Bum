@@ -9,12 +9,12 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.MemoryCacheImageInputStream;
 
-final class SignatureImages {
+public final class SignatureImages {
     private static final byte[] PNG_HEADER = {(byte) 137, 80, 78, 71, 13, 10, 26, 10};
 
     private SignatureImages() { }
 
-    static byte[] parsePng(String encoded) {
+    public static byte[] parsePng(String encoded) {
         if (encoded == null || encoded.length() > 400_000) {
             throw new IllegalArgumentException("서명 이미지가 너무 큽니다.");
         }

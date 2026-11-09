@@ -91,6 +91,7 @@
                     <include>index.html</include>
                     <include>master/**/*.html</include><include>master/js/**</include><include>master/assets/**</include>
                     <include>user/**/*.html</include><include>user/js/**</include><include>user/assets/**</include>
+                    <include>attendance/**</include>
                     <include>shared/assets/**</include>
                 </includes>
             </resource>
