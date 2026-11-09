@@ -7,9 +7,9 @@ const { createHash, randomUUID } = require('node:crypto');
 // 160×80 흰 배경에 검은 곡선을 그린 테스트 PNG입니다.
 const testSignature = 'iVBORw0KGgoAAAANSUhEUgAAAKAAAABQCAAAAAC7NiHoAAABI0lEQVR4nO2YQQ7CMAwE8/9PwwGpB3AS27OBSuzcqsS7o1ZVA+Nxc8avBXZYkGJBigUpFqRYkGJBigUpFqRYkGJBigUpFqSoBMeFKPAKloS8oci8snlChMTtFU/nZ4j8qODUT6aIYkIbsSIImYsoDfsZSwmdYjthJ6AybAZk6jWKvfFktcKwM53vFRg2hkutWLE+WqykhtXJRh8zLA627ge6ibWxZhMxrEyBnsKLv7mWlPSHP7d8723Mfnt6gorP1jYjXE5Vis4m65jJ4sf10dPdNGrMV8KdwaDofBzlLTtiwQCF3rJg0pEUVOktFePdmWmlXrUkeuqH9Wodp3/zLMiV/M2/W8ewIMWCFAtSLEixIMWCFAtSLEixIMWCFAtSbi/4BGUsSUxRP1TMAAAAAElFTkSuQmCC';
 
-function readConfig() {
+function readConfig(file = path.join(__dirname, '.env')) {
   const config = {};
-  for (const line of fs.readFileSync(path.join(__dirname, '.env'), 'utf8').split(/\r?\n/)) {
+  for (const line of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
     const match = line.match(/^([A-Z_]+)=(.*)$/);
     if (match) config[match[1]] = match[2].trim();
   }

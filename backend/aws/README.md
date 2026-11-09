@@ -14,8 +14,10 @@ ECR에 이미지를 올리고 ECS 작업 정의의 이미지, 역할 ARN, Secret
 RDS PostgreSQL은 ECS에서 접근 가능한 네트워크에 두고 DB_URL/DB_USER/DB_PASSWORD를 주입합니다.
 config/env.example의 verify-full 예시를 사용한다면 RDS CA 파일을 해당 경로에 제공해야 합니다.
 공개 접속은 HTTPS 로드밸런서를 통해 제공하고 APP_PUBLIC_BASE_URL에 그 기본 주소를 설정합니다.
-관리자 경로는 /master/index.html, 방문자 경로는 /user/index.html입니다.
+관리자 경로는 /master/index.html입니다. 행사 출석 관리는 /master/attendance.html에서 열고,
+발급된 /attendance/index.html#token=… 링크를 원격 Android 앱에 입력합니다.
+기존 개별 서명 경로는 /user/index.html입니다.
 AWS 모드에서는 로컬 HTTP 허용 옵션을 켜도 HTTP 공개 주소를 거부합니다.
 
-로컬 PC의 DB와 RDS는 자동 동기화되지 않습니다. 태블릿은 선택한 서버의 API를 통해
-그 서버가 연결된 DB만 사용합니다. APK 자체나 서버 선택 UI는 아직 포함하지 않습니다.
+로컬 PC의 DB와 RDS는 별도의 출석부를 보관합니다. 원격 앱은 행사 링크에 지정된 HTTPS 서버에 접속합니다.
+APK 빌드 방법은 [Android 앱 안내](../../android/README.md)를 참고하세요.

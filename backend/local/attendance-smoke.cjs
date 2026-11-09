@@ -8,8 +8,11 @@ const adminRoute = '/api/admin/attendance/events';
 const publicRoute = '/api/public/attendance';
 
 async function main() {
-  const config = readConfig();
-  const base = 'http://127.0.0.1:' + (config.LOCAL_HTTP_PORT || '8080');
+  const config = readConfig(process.env.ATTENDANCE_TEST_ENV);
+  const testUrl = new URL(process.env.ATTENDANCE_TEST_ORIGIN ||
+    ('http://127.0.0.1:' + (config.LOCAL_HTTP_PORT || '8080')));
+  assert.ok(['127.0.0.1', 'localhost'].includes(testUrl.hostname), '개발 PC에서만 통합 테스트를 실행하세요.');
+  const base = testUrl.origin;
   const admin = browser(base);
   const visitor = browser(base);
   const loginToken = await json(await admin('/api/csrf'));
@@ -18,6 +21,11 @@ async function main() {
   }) });
   assert.equal(login.status, 302);
   assert.ok(login.headers.get('location').endsWith('/master/index.html'));
+  if (testUrl.protocol === 'https:') {
+    assert.ok(login.headers.getSetCookie().some(cookie => cookie.startsWith('JSESSIONID=') && /; Secure/i.test(cookie)));
+  }
+  const session = await json(await admin('/api/admin/session'));
+  assert.equal(session.mode, process.env.ATTENDANCE_TEST_MODE || 'local');
   const adminPost = await poster(admin);
   const visitorPost = await poster(visitor);
   assert.equal((await admin('/master/attendance.html')).status, 200);
